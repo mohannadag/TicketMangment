@@ -1,0 +1,194 @@
+﻿@model Ticket
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Ticket Details";
+}
+
+
+<div class="row justify-content-center m-3">
+    <div class="col-sm-8">
+        <div class="card">
+            <div class="card-header">
+                <h1>@Model.Subject</h1>
+            </div>
+
+            <div class="card-body text-center">
+
+
+                <h4>Request details: @Model.RequestDetail</h4>
+                <h4>Location: @Model.Location</h4>
+                <h4>Department: @Model.Department.DepartmentName</h4>
+                <h4>Priority: @Model.Priority.PriorityName</h4>
+                <h4>Created By: @Model.User.UserName</h4>
+                <h4>Created Date: @Model.CreateDate</h4>
+
+                @if (Model.AssignedTo != null)
+                {<h4>Assigned To: @Model.AssignedUser.UserName</h4>}
+
+                <h4>Ticket status: @Model.TicketStatus</h4>
+
+                <h4>The Ticket Notes:</h4>
+                @if (Model.Notes.Any())
+                {
+                    @foreach (var note in Model.Notes)
+                    {
+                        <h5>@note.NoteBody</h5>
+                    }
+                }
+
+            </div>
+            
+
+            <div class="card-footer text-center">
+                <a href="@ViewBag.returnUrl" class="btn btn-primary">Back</a>
+
+                <a asp-controller="ticket" asp-action="edit"
+                   asp-route-id="@Model.TicketId"
+                   class="btn btn-primary">Edit</a>
+                <button id="deletebtn" class="btn btn-danger">Delete</button>
+                <form data-ajax="true">
+                    @*asp-route-id="@Model.TicketId" asp-action="delete"*@
+                    @*<button id="deletebtn" class="btn btn-danger" type="submit">Delete</button>*@
+                    @*value="@Model.TicketId"*@
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+            $('#deletebtn').click(function () {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    console.log(result);
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/ticket/delete/" + @Model.TicketId,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                                },
+                            data: {
+                                id: @Model.TicketId
+                           }
+                        }).done(function () {
+                            Swal.fire(
+                                'Deleted!',
+                                'The ticket has been deleted.',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/Ticket/MyTickets';
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        })
+                    }
+                });
+            });
+        });
+
+        //$(document).ready(function () {
+        //    $('#deletebtn').click(function () {
+        //        //swal({
+        //        //    dangerMode: true,
+        //        //    title: "Warning",
+        //        //    text: "Are you really want to Delete this ticket",
+        //        //    type: "warning",
+        //        //    showCancelButton: true,
+        //        //    confirmButtonText: "Yes",
+        //        //    cancelButtonText: "Cancel",
+        //        //    confirmButtonColor: "#ec6c62"
+        //        //});
+        //        swal({
+        //            title: "Are you sure?",
+        //            text: "Once deleted, you will not be able to recover this ticket!",
+        //            icon: "warning",
+        //            buttons: true,
+        //            dangerMode: true
+        //        }).then((willDelete) => {
+        //            if (willDelete) {
+        //                //@*$.post("/ticket/delete/", { id: "@Model.TicketId", st: "something", num: 2 },
+                            function (returnedData) {
+                                console.log(returnedData);
+                            }).fail(function () {
+                                console.log("error");
+                            });*@
+
+
+                        ////console.log(willDelete);
+
+                        //$.ajax({
+                        //    //url: "/ticket/delete/" + @Model.TicketId,
+                            //method: "POST",
+                            //data: {
+        //                    //    id: @Model.TicketId
+        //                    },
+        //                    success: swal("the ticket has been deleted!", {
+        //                        icon: "success"
+        //                    }),
+        //                    error: swal("Something went wrong! Please try again later", {
+        //                        icon: "error"
+        //                    })
+        //                })
+        //                    .done(function (data) {
+        //                    sweetAlert
+        //                        ({
+        //                            title: "Deleted!",
+        //                            text: "Your file was successfully deleted!",
+        //                            type: "success"
+        //                        },
+        //                            function () {
+        //                                window.location.href = '/DeleteConfirmation/Details';
+        //                            });
+        //                    })
+        //                    .fail(function (data) {
+        //                        swal("Oops", "We couldn't connect to the server!", "error");
+        //                    });
+
+
+        //                //swal("the ticket has been deleted!", {
+        //                //    icon: "success",
+        //                //});
+        //            } else {
+        //                swal("the ticket is safe!");
+        //            }
+        //        });
+        //    });
+        //});
+
+        //$.post("demo_test_post.asp",
+        //    {
+        //        name: "Donald Duck",
+        //        city: "Duckburg"
+        //    },
+        //    function (data, status) {
+        //        alert("Data: " + data + "\nStatus: " + status);
+        //    });
+
+    </script>
+}
+

@@ -1,0 +1,27 @@
+﻿@model Department
+
+<div class="row justify-content-center m-3">
+    <div class="col-sm-8">
+
+
+        <div class="text-center">
+
+
+            <h4>Priority Name: @Model.DepartmentName</h4>
+
+
+
+        </div>
+
+        <div class="text-center">
+            <a asp-controller="department" asp-action="index" class="btn btn-primary">Back</a>
+
+            <a asp-controller="department" asp-action="edit"
+               asp-route-id="@Model.DepartmentId"
+               class="btn btn-primary">Edit</a>
+            <a asp-controller="department" asp-action="delete" asp-route-id="@Model.DepartmentId"
+               class="btn btn-danger">Delete</a>
+        </div>
+
+    </div>
+</div>

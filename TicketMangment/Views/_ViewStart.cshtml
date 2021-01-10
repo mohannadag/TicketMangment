@@ -1,0 +1,29 @@
+﻿@*@{
+    Layout = "_Layout";
+}*@
+
+@{
+    //if (User.HasClaim("AccessControlPanelPolicy", "AccessControlPanelPolicy"))
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout1.cshtml";
+    }
+
+
+    //string CurrentName = Convert.ToString(HttpContext.Current.Request.RequestContext.RouteData.Values["Controller"]);
+    //dynamic Layout;
+    //switch (CurrentName)
+    //{
+    //    case "User":
+    //        Layout = "~/Views/Shared/_Layout.cshtml";
+    //        break;
+    //    default:
+    //        //Admin layout
+    //        Layout = "~/Views/Shared/_AdminLayoutPage.cshtml";
+    //        break;
+    //}
+}  

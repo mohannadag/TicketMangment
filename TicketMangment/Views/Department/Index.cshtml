@@ -1,0 +1,289 @@
+﻿@model IEnumerable<Department>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@inject UserManager<ApplicationUser> userManger 
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "All Departments";
+    var departments = Model.ToList();
+    int index = 1;
+}
+
+@*<a asp-controller="Department" asp-action="create"
+    class="btn btn-primary">Create New Department</a>*@
+<button class="btn btn-primary" id="createNew">Create New Department</button><br /><br />
+
+@*<div>
+        <ul>
+            @foreach (var department in Model)
+            {
+                <li class="text-center">
+                    <h4>@department.DepartmentName</h4>
+
+                    <a asp-controller="department" asp-action="details" asp-route-id="@department.DepartmentId"
+                       class="btn btn-primary m-1">View</a>
+                    <a asp-controller="department" asp-action="edit"
+                       asp-route-id="@department.DepartmentId"
+                       class="btn btn-primary m-1">Edit</a>
+                    <a asp-controller="department" asp-action="delete" asp-route-id="@department.DepartmentId" class="btn btn-danger m-1">Delete</a>
+
+                </li>
+            }
+        </ul>
+    </div>*@
+@*asp-controller="department" asp-action="edit" asp-route-id="@departments[i].DepartmentId"*@
+<div class="card p-3">
+    <div>
+        <table id="paginationFullNumbers" class="table">
+            <thead>
+                <tr>
+                    <th class="th-sm">
+                        ID
+                    </th>
+                    <th class="th-sm">
+                        Department Name
+                    </th>
+                    <th class="th-sm">
+                        Details
+                    </th>
+                    <th class="th-sm">
+                        Users in department
+                    </th>
+                    <th class="th-sm">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count(); i++)
+                {
+
+                    var editId = "edit_" + departments[i].DepartmentName + "_" + departments[i].DepartmentId;
+                    var deleteId = "delete_" + departments[i].DepartmentName + "_" + departments[i].DepartmentId;
+                    <tr>
+                        <td>@(index++)</td>
+                        <td>
+                            @departments[i].DepartmentName
+                            <p class="text-info" style="font-size:small">
+                            Created by @await userManger.FindByIdAsync(departments[i].CreatedBy) at @departments[i].CreateDate
+                            
+                                @if (departments[i].ModifiedBy != null)
+                                {
+
+                                    <br />
+                                    <span>Modified by @await userManger.FindByIdAsync(departments[i].ModifiedBy) at @departments[i].ModifyDate</span>
+                                    
+                                }
+                            </p>
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            @foreach (var user in departments[i].ListOfUsersName)
+                            {
+                                <p>@user</p>
+                            }
+                        </td>
+
+                        @*<a asp-controller="department" asp-action="details" asp-route-id="@departments[i].DepartmentId"
+                            class="btn btn-primary m-1">View</a>*@
+                    <td>
+                        <a class="btn btn-info btn-sm m-1" asp-controller="department" 
+                           asp-action="AddUserToDep" asp-route-id="@departments[i].DepartmentId" type="submit">Manage</a>
+                        <button class="btn btn-primary btn-sm m-1" id="@editId" name="edit">Edit</button>
+                        <button class="btn btn-danger btn-sm m-1" id="@deleteId" name="delete">Delete</button>
+                    </td>
+
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th class="th-sm">
+                        ID
+                    </th>
+                    <th class="th-sm">
+                        Department Name
+                    </th>
+                    <th class="th-sm">
+                        Details
+                    </th>
+                    <th class="th-sm">
+                        Users in department
+                    </th>
+                    <th class="th-sm">
+                        Actions
+                    </th>
+                </tr>
+            </tfoot>
+        </table>
+        @*<ul>
+
+            @for (int i = 0; i < Model.Count(); i++)
+            {
+                var editId = "edit_" + departments[i].DepartmentName + "_" + departments[i].DepartmentId;
+                var deleteId = "delete_" + departments[i].DepartmentName + "_" + departments[i].DepartmentId;
+                <li class="text-center">
+                    <h4>@departments[i].DepartmentName</h4>*@
+
+        @*<a asp-controller="department" asp-action="details" asp-route-id="@departments[i].DepartmentId"
+            class="btn btn-primary m-1">View</a>*@
+        @*<button class="btn btn-primary m-1" id="@editId" name="edit">Edit</button>
+                        <button class="btn btn-danger m-1" id="@deleteId" name="delete">Delete</button>
+
+                    </li>
+                }
+            </ul>*@
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+            //pagination table
+            $('#paginationFullNumbers').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('.dataTables_length').addClass('bs-select');
+
+            //delete button
+            $('button[name="delete"').click(function () {
+                var deleteArray = $(this).attr('id').split('_');
+                var id = deleteArray[2];
+                var name = deleteArray[1];
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/department/delete/" + id,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            }
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'done',
+                                'the Department' + name +'has deleted',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/department/index';
+                        })
+                    }
+                })
+            })
+
+
+            //edit button
+            $('button[name="edit"').click(function () {
+                var editId = $(this).attr('id').split('_');
+                var id = editId[2];
+                var name = editId[1];
+                console.log(editId);
+                console.log(id);
+                console.log(name);
+                Swal.fire({
+                    title: 'Edit Department',
+                    html:
+                        '<input id="departmentName" placeholder="Department new name" class="swal2-input">',
+                    //+'<input id="swal-input2" class="swal2-input">',
+                    focusConfirm: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/department/edit/" + id,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            },
+                            data: {
+                                newName: $('#departmentName').val()
+                            }
+
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'Congrats!',
+                                'Department name changed.',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/department/index';
+                        })
+                    }
+                })
+            });
+        });
+
+
+        //create button
+        $(document).ready(function () {
+            $('#createNew').click(function () {
+                Swal.fire({
+                    title: 'New Department',
+                    input: 'text',
+                    inputLabel: 'Department Name',
+                    inputPlaceholder: 'what you would name the department?',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'You need to write something!'
+                        }
+                    },
+                    showCancelButton: true
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/department/Create",
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            },
+                            data: {
+                                departmentName: result.value
+                            }
+
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            window.location.href = '/department/index';
+                        })
+                    }
+                });
+            });
+        });
+
+    </script>
+}

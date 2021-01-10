@@ -1,0 +1,261 @@
+﻿@model DashBoardViewModel
+
+@{ 
+    ViewData["Title"] = "Dash Board";
+}
+
+<div class="card mt-3">
+    <div class="card-content">
+        <div class="row row-group m-0">
+            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                <div class="card-body">
+                    <h5 class="text-white mb-0">@Model.Tickets.Count() <span class="float-right"><i class="zmdi zmdi-card"></i></span></h5>
+                    <div class="progress my-3" style="height:3px;">
+                        <div class="progress-bar" style="width:55%"></div>
+                    </div>
+                    <p class="mb-0 text-white small-font">
+                        Total Tickets <span class="float-right">
+                            +@Model.PreviousMonthTickets.Count() <i class="zmdi zmdi-long-arrow-up"></i>
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                <div class="card-body">
+                    <h5 class="text-white mb-0">@Model.Tickets.Where(t => t.TicketStatus == TicketStatus.Solved).Count() <span class="float-right"><i class="fa fa-usd"></i></span></h5>
+                    <div class="progress my-3" style="height:3px;">
+                        <div class="progress-bar" style="width:55%"></div>
+                    </div>
+                    <p class="mb-0 text-white small-font">
+                        Total Solved Tickets <span class="float-right">
+                            +@Model.PreviousMonthTickets.Where(t => t.TicketStatus == TicketStatus.Solved).Count() <i class="zmdi zmdi-long-arrow-up"></i>
+                        </span>
+                    </p>
+                </div>
+            </div>
+            @*<div class="col-12 col-lg-6 col-xl-3 border-light">
+                    <div class="card-body">
+                        <h5 class="text-white mb-0">6200 <span class="float-right"><i class="fa fa-eye"></i></span></h5>
+                        <div class="progress my-3" style="height:3px;">
+                            <div class="progress-bar" style="width:55%"></div>
+                        </div>
+                        <p class="mb-0 text-white small-font">Visitors <span class="float-right">+5.2% <i class="zmdi zmdi-long-arrow-up"></i></span></p>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 col-xl-3 border-light">
+                    <div class="card-body">
+                        <h5 class="text-white mb-0">5630 <span class="float-right"><i class="fa fa-envira"></i></span></h5>
+                        <div class="progress my-3" style="height:3px;">
+                            <div class="progress-bar" style="width:55%"></div>
+                        </div>
+                        <p class="mb-0 text-white small-font">Messages <span class="float-right">+2.2% <i class="zmdi zmdi-long-arrow-up"></i></span></p>
+                    </div>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8 col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                Overall Tickets
+                @*<div class="card-action">
+                        <div class="dropdown">
+                            <a href="javascript:void();" class="dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown">
+                                <i class="icon-options"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="javascript:void();">Action</a>
+                                <a class="dropdown-item" href="javascript:void();">Another action</a>
+                                <a class="dropdown-item" href="javascript:void();">Something else here</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="javascript:void();">Separated link</a>
+                            </div>
+                        </div>
+                    </div>*@
+            </div>
+            <div class="card-body">
+                <ul class="list-inline">
+                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-white"></i>Solved Tickets</li>
+                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>All Tickets</li>
+                </ul>
+                <div class="chart-container-1">
+                    <canvas id="ticketsChart" onload="LoadData()"></canvas>
+                </div>
+            </div>
+
+            <div class="row m-0 row-group text-center border-top border-light-3">
+                <div class="col-12 col-lg-6">
+                    <div class="p-3">
+                        <h5 class="mb-0">@Model.Tickets.Count()</h5>
+                        <small class="mb-0">Overall Tickets <span> <i class="fa fa-arrow-up"></i> @Model.PreviousMonthTickets.Count()</span></small>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="p-3">
+                        <h5 class="mb-0">@Model.Tickets.Where(t=> t.TicketStatus == TicketStatus.Solved).Count()</h5>
+                        <small class="mb-0">Solved Tickets <span> <i class="fa fa-arrow-up"></i> @Model.PreviousMonthTickets.Where(t => t.TicketStatus == TicketStatus.Solved).Count()</span></small>
+                    </div>
+                </div>
+                @*<div class="col-12 col-lg-4">
+                    <div class="p-3">
+                        <h5 class="mb-0">245.65</h5>
+                        <small class="mb-0">Pages/Visit <span> <i class="fa fa-arrow-up"></i> 5.62%</span></small>
+                    </div>
+                </div>*@
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                Weekly sales
+                @*<div class="card-action">
+                    <div class="dropdown">
+                        <a href="javascript:void();" class="dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown">
+                            <i class="icon-options"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="javascript:void();">Action</a>
+                            <a class="dropdown-item" href="javascript:void();">Another action</a>
+                            <a class="dropdown-item" href="javascript:void();">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="javascript:void();">Separated link</a>
+                        </div>
+                    </div>
+                </div>*@
+            </div>
+            <div class="card-body">
+                <div class="chart-container-2">
+                    <canvas id="departmentChart" onload="LoadDataChart2()"></canvas>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-items-center">
+                    <tbody>
+                        @foreach(var dep in Model.Departments.Take(4))
+                        {
+                            <tr>
+                                <td><i class="fa fa-circle text-white mr-2"></i> @dep.DepartmentName</td>
+                                <td>@Model.Tickets.Where(t => t.DepartmentId == dep.DepartmentId).Count()</td>
+                                <td>+@Model.PreviousMonthTickets.Where(t => t.DepartmentId == dep.DepartmentId).Count()</td>
+                            </tr>
+                            @*<tr>
+                                <td><i class="fa fa-circle text-light-1 mr-2"></i>Affiliate</td>
+                                <td>$2602</td>
+                                <td>+25%</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa fa-circle text-light-2 mr-2"></i>E-mail</td>
+                                <td>$1802</td>
+                                <td>+15%</td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa fa-circle text-light-3 mr-2"></i>Other</td>
+                                <td>$1105</td>
+                                <td>+5%</td>
+                            </tr>*@
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div><!--End Row-->
+
+<div class="row">
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                Recent Tickets Tables
+                @*<div class="card-action">
+                    <div class="dropdown">
+                        <a href="javascript:void();" class="dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown">
+                            <i class="icon-options"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="javascript:void();">Action</a>
+                            <a class="dropdown-item" href="javascript:void();">Another action</a>
+                            <a class="dropdown-item" href="javascript:void();">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="javascript:void();">Separated link</a>
+                        </div>
+                    </div>
+                </div>*@
+            </div>
+            <div class="table-responsive">
+                <table class="table align-items-center table-flush table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var ticket in Model.Tickets.Where(t=> t.TicketStatus != TicketStatus.Solved).Take(5))
+                        {
+                            <tr>
+                                <td>@ticket.Subject</td>
+                                <td>@ticket.Department.DepartmentName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                Recent Solved Tickets Tables
+                @*<div class="card-action">
+                    <div class="dropdown">
+                        <a href="javascript:void();" class="dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown">
+                            <i class="icon-options"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="javascript:void();">Action</a>
+                            <a class="dropdown-item" href="javascript:void();">Another action</a>
+                            <a class="dropdown-item" href="javascript:void();">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="javascript:void();">Separated link</a>
+                        </div>
+                    </div>
+                </div>*@
+            </div>
+            <div class="table-responsive">
+                <table class="table align-items-center table-flush table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var ticket in Model.Tickets.Where(t=> t.TicketStatus == TicketStatus.Solved).Take(5))
+                        {
+                            <tr>
+                                <td>@ticket.Subject</td>
+                                <td>@ticket.Department.DepartmentName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div><!--End Row-->
+
+
+@section Scripts{
+    <script src="~/js/ChartsScript.js"></script>
+    <script type="text/javascript">
+        LoadData();
+        LoadDataChart2();
+    </script>
+    
+    }

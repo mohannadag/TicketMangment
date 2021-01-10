@@ -1,0 +1,268 @@
+﻿@model MyTicketsViewModel
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "My Tickets";
+    var i = 1;
+}
+
+
+<a asp-controller="ticket" asp-action="create"
+   class="btn btn-primary">Create New Ticket</a>
+<br /><br />
+@if(Model.MyTickets.Any())
+{ 
+<h2>Tickets assigned to Me</h2>
+<div>
+    <table id="paginationFullNumbers" class="table">
+        <thead>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Ticket Subject
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Department
+                </th>
+                <th class="th-sm">
+                    Priority
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in Model.MyTickets)
+            {
+                <tr>
+                    <td>@(i++)</td>
+                    <td>@ticket.Subject</td>
+                    @*<td>@ticket.RequestDetail.Substring(0, 2)</td>*@
+                    <td>
+                        @if (ticket.RequestDetail.Length >= 40)
+                        {
+                            @ticket.RequestDetail.Substring(0, 39)
+                            <text> ... </text>
+                        }
+                        else
+                        {
+                            @ticket.RequestDetail
+                        }
+                    </td>
+                    <td>@ticket.Department.DepartmentName</td>
+                    <td>@ticket.Priority.PriorityName</td>
+                    <td>
+                        <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary btn-sm">View</a>
+                        <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary btn-sm">Edit</a>
+                        <a asp-controller="ticket" asp-action="delete" asp-route-id="@ticket.TicketId"
+                           class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Ticket Subject
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Department
+                </th>
+                <th class="th-sm">
+                    Priority
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<br />
+<hr />
+<br />
+}
+@if (Model.CreatedTickets.Any())
+{
+    <h2>Tickets created by Me</h2>
+    <div>
+        <table id="paginationTable" class="table">
+            <thead>
+                <tr>
+                    <th class="th-sm">
+                        ID
+                    </th>
+                    <th class="th-sm">
+                        Ticket Subject
+                    </th>
+                    <th class="th-sm">
+                        Details
+                    </th>
+                    <th class="th-sm">
+                        Department
+                    </th>
+                    <th class="th-sm">
+                        Priority
+                    </th>
+                    <th class="th-sm">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @(i=0)
+                @foreach (var ticket in Model.CreatedTickets)
+                {
+                    <tr>
+                        <td>@(i++)</td>
+                        <td>@ticket.Subject</td>
+                        @*<td>@ticket.RequestDetail.Substring(0, 2)</td>*@
+                        <td>
+                            @if (ticket.RequestDetail.Length >= 40)
+                            {
+                                @ticket.RequestDetail.Substring(0, 39)
+                                <text> ... </text>
+                            }
+                            else
+                            {
+                                @ticket.RequestDetail
+                            }
+                        </td>
+                        <td>@ticket.Department.DepartmentName</td>
+                        <td>@ticket.Priority.PriorityName</td>
+                        <td>
+                            <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">View</a>
+                            <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">Edit</a>
+                            <a asp-controller="ticket" asp-action="delete" asp-route-id="@ticket.TicketId"
+                               class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th class="th-sm">
+                        ID
+                    </th>
+                    <th class="th-sm">
+                        Ticket Subject
+                    </th>
+                    <th class="th-sm">
+                        Details
+                    </th>
+                    <th class="th-sm">
+                        Department
+                    </th>
+                    <th class="th-sm">
+                        Priority
+                    </th>
+                    <th class="th-sm">
+                        Actions
+                    </th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+else
+{
+    <h5>There is no tickets created yet!</h5>
+}
+
+
+@*<div class="card-deck">
+            @foreach (var ticket in Model.MyTickets)
+            {
+                <div class="card m-3" style="min-width: 18rem; max-width:30.5%;">
+                    <div class="card-header">
+                        <h3>@ticket.Subject</h3>
+                    </div>
+
+                    <div class="card-body text-center">
+
+                        <h4>Ticket Details: @ticket.RequestDetail</h4>
+                        <h4>Ticket Department: @ticket.Department.DepartmentName</h4>
+                        <h4>Priority: @ticket.Priority.PriorityName</h4>
+
+                    </div>
+
+                    <div class="card-footer text-center">
+                        <a asp-controller="ticket" asp-action="details"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary m-1">View</a>
+
+                        <a asp-controller="ticket" asp-action="edit"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary m-1">Edit</a>
+                        <a asp-controller="ticket" asp-action="delete"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-danger m-1">Delete</a>
+                    </div>
+                </div>
+            }
+        </div>
+
+    <div class="card-deck">
+        @foreach (var ticket in Model.CreatedTickets)
+        {
+            <div class="card m-3" style="min-width: 18rem; max-width:30.5%;">
+                <div class="card-header">
+                    <h3>@ticket.Subject</h3>
+                </div>
+
+                <div class="card-body text-center">
+
+                    <h4>Ticket Details: @ticket.RequestDetail</h4>
+                    <h4>Ticket Department: @ticket.Department.DepartmentName</h4>
+                    <h4>Priority: @ticket.Priority.PriorityName</h4>
+
+                </div>
+
+                <div class="card-footer text-center">
+                    <a asp-controller="ticket" asp-action="details"
+                       asp-route-id="@ticket.TicketId"
+                       class="btn btn-primary m-1">View</a>
+
+                    <a asp-controller="ticket" asp-action="edit"
+                       asp-route-id="@ticket.TicketId"
+                       class="btn btn-primary m-1">Edit</a>
+                    <a asp-controller="ticket" asp-action="delete"
+                       asp-route-id="@ticket.TicketId"
+                       class="btn btn-danger m-1">Delete</a>
+                </div>
+            </div>
+        }
+    </div>*@
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //Pagination full Numbers
+            $('#paginationFullNumbers').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('#paginationTable').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+    </script>
+}

@@ -1,0 +1,147 @@
+﻿@model List<AddUserToDepViewModel>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@{
+    int departmentId = ViewBag.departmentId;
+}
+
+<form method="post">
+    <div class="card">
+        <div class="card-header">
+            <h2>Add or remove users from this department</h2>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr class="th-sm">
+                        <th>#</th>
+                        <th>Employee Name</th>
+                        <th>Department Head</th>
+                        <th>Delegate</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                    <tr>
+                        @{var makeAdmin = "makeadmin_" + Model[i].UserRoleViewModels.UserId + "_" + ViewBag.departmentId;}
+                        @*<div class="form-check m-1">*@
+                        <td >
+                            <div class="form-check m-1">
+                                <input type="hidden" name="departmentId" value="@ViewBag.departmentId" />
+                                <input asp-for="@Model[i].UserRoleViewModels.UserId" type="hidden" />
+                                <input asp-for="@Model[i].UserRoleViewModels.UserName" type="hidden" />
+                                <input asp-for="@Model[i].UserRoleViewModels.IsSelected" class="form-check-input" />
+                                </div>
+                        </td>
+                        <td>
+                            <label class="form-check-label" asp-for="@Model[i].UserRoleViewModels.IsSelected">
+                                @Model[i].UserRoleViewModels.UserName
+                            </label>
+                        </td>
+                        <td>
+                            @if (Model[i].UserRoleViewModels.UserId == Model[i].UserRoleViewModels.DepAdmin)
+                            {
+                                <a id="@makeAdmin" name="makeadmin" class="badge-success" href="#" role="button">Admin <i class="zmdi zmdi-account-o"></i></a>
+                            }
+                            else
+                            {
+                                <a id="@makeAdmin" name="makeadmin" href="#" role="button">Make Admin</a>
+                            }
+                        </td>
+                        <td>
+                            @if (Model[i].UserRoleViewModels.IsSelected == true)
+                            {
+                                <div class="form-group row">
+                                    <label asp-for="@Model[i].AssignTo" class="col-form-label small"></label>
+                                    <div>
+                                        <select class="form-control small ml-1" asp-for="@Model[i].AssignTo"
+                                                asp-items="@(new SelectList(ViewBag.Users,"Id","UserName"))">
+                                            <option value="@null">Please select one</option>
+                                        </select>
+                                        <span asp-validation-for="@Model[i].AssignTo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            }
+                            
+                            @*<input type="button" value="Delegate" class="btn btn-primary" />*@
+                        </td>
+                        
+                    </tr>
+                            }
+                        
+                    </tbody>
+            </table>
+            
+        </div>
+        <div class="card-footer">
+            <input type="submit" value="Update" class="btn btn-primary" />
+            <a asp-controller="Department" asp-action="index" class="btn btn-primary">Cancel</a>
+            @*<a asp-controller="Department" asp-action="Edit" asp-route-id="@departmentId" class="btn btn-primary">Cancel</a>*@
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    <script type="text/javascript">
+
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+
+
+            //makeadmin button to make the user admin in this department
+            $('a[name="makeadmin"').click(function () {
+                var makeadmin = $(this).attr('id').split('_');
+                var userid = makeadmin[1];
+                var depid = makeadmin[2];
+                console.log(makeadmin);
+                console.log(userid);
+                console.log(depid);
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You want to make this user an admin for this department!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/department/makeuseradminS",
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            },
+                            data: {
+                                userId: userid,
+                                depId: depid
+                            }
+                        }).done(function (response) {
+                            //var message = JSON.parse(response);
+                            Swal.fire(
+                                'Info!',
+                                response,
+                                'info'
+                            ).then(function () {
+                                location.reload();
+                            })
+                        })
+                    }
+                })
+            })
+        });
+
+
+
+
+    </script>
+}

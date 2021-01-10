@@ -1,0 +1,373 @@
+﻿@model DeletedTicketsViewModel
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@inject UserManager<ApplicationUser> userManger
+
+@{
+    ViewData["Title"] = "Deleted items";
+    //var some = Context.Request.Path;
+}
+
+
+@* this for the deleted tickets *@
+<h2>Deleted tickets</h2>
+<div>
+    <table id="ticketTable" class="table">
+        <thead>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in Model.Tickets)
+            {
+                var deleteId = "delete_" + ticket.Subject + "_" + ticket.TicketId;
+
+                <tr>
+                    <td>@ticket.TicketId</td>
+                    <td>@ticket.Subject</td>
+                    <td>
+                        <p>deleted by @await userManger.FindByIdAsync(ticket.ModifiedBy) at @ticket.ModifyDate</p>
+                    </td>
+                    <td>
+                        <button class="btn btn-success btn-sm" name="ticketRestore" id="@deleteId">Restore</button>
+                        <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary btn-sm">View</a>
+                        <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary btn-sm">Edit</a>
+                        <button class="btn btn-danger btn-sm" name="ticketDelete" id="@deleteId">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br />
+<hr />
+<br />
+
+
+@* this for the deleted department *@
+<h2>Deleted departments</h2>
+<div>
+    <table id="departmentTable" class="table">
+        <thead>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in Model.Departments)
+            {
+                var deleteId = "delete_" + department.DepartmentName + "_" + department.DepartmentId;
+                <tr>
+                    <td>@department.DepartmentId</td>
+                    <td>@department.DepartmentName</td>
+                    <td>
+                        <p>deleted by @await userManger.FindByIdAsync(department.ModifiedBy) at @department.ModifyDate</p>
+                    </td>
+                    <td>
+                        @* add method to the controller to restore the deleted item *@
+                        <button class="btn btn-success btn-sm" name="departmentRestore" id="@deleteId">Restore</button>
+
+                        <a asp-controller="department" asp-action="details" asp-route-id="@department.DepartmentId"
+                           class="btn btn-primary btn-sm">View</a>
+                        <a asp-controller="department" asp-action="edit" asp-route-id="@department.DepartmentId"
+                           class="btn btn-primary btn-sm">Edit</a>
+
+                        @* add method to the controller to delete item permenently *@
+                        <button class="btn btn-danger btn-sm" name="departmentDelete" id="@deleteId">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br />
+<hr />
+<br />
+
+
+@* this for the deleted priorites *@
+<h2>Deleted priorities</h2>
+<div>
+    <table id="priorityTable" class="table">
+        <thead>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var priority in Model.Priorities)
+            {
+                var deleteId = "delete_" + priority.PriorityName + "_" + priority.PriorityId;
+
+                <tr>
+                    <td>@priority.PriorityId</td>
+                    <td>@priority.PriorityName</td>
+                    <td>
+                        <p>deleted by @await userManger.FindByIdAsync(priority.ModifiedBy) at @priority.ModifyDate</p>
+                    </td>
+                    <td>
+                        <button class="btn btn-success btn-sm" name="priorityRestore" id="@deleteId">Restore</button>
+                        <a asp-controller="ticket" asp-action="details" asp-route-id="@priority.PriorityId"
+                           class="btn btn-primary btn-sm">View</a>
+                        <a asp-controller="ticket" asp-action="edit" asp-route-id="@priority.PriorityId"
+                           class="btn btn-primary btn-sm">Edit</a>
+                        <button class="btn btn-danger btn-sm" name="priorityDelete" id="@deleteId">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="th-sm">
+                    ID
+                </th>
+                <th class="th-sm">
+                    Item name
+                </th>
+                <th class="th-sm">
+                    Details
+                </th>
+                <th class="th-sm">
+                    Actions
+                </th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+            //Pagination full Numbers
+            $('#departmentTable').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('#ticketTable').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('#priorityTable').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+
+        $(document).ready(function () {
+            @*$('button[name="ticketDelete"]').click(function () {
+                var deleteArray = $(this).attr('id').split('_');
+                var id = deleteArray[2];
+                var name = deleteArray[1];
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/ticket/delete/" + id,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            }
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'done',
+                                'the ticket' + name +'has deleted',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/ticket/showdeletedtickets';
+                        })
+                    }
+                })
+            })*@
+
+
+            // delete department
+
+            $('button').click(function () {
+                var deleteArray = $(this).attr('id').split('_');
+                var id = deleteArray[2];
+                var name = deleteArray[1];
+                var postUrl = "";
+                if ($(this).attr('name') == "departmentDelete") {
+                    postUrl = "/department/forcedelete/" + id;
+                } else if ($(this).attr('name') == "priorityDelete") {
+                    postUrl = "/priority/forcedelete/" + id;
+                } else if ($(this).attr('name') == "ticketDelete") {
+                    postUrl = "/ticket/forcedelete/" + id;
+                } else if ($(this).attr('name') == "departmentRestore") {
+                    postUrl = "/department/restore/" + id;
+                } else if ($(this).attr('name') == "priorityRestore") {
+                    postUrl = "/priority/restore/" + id;
+                } else if ($(this).attr('name') == "ticketRestore") {
+                    postUrl = "/ticket/restore/" + id;
+                }
+                console.log(postUrl);
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: postUrl,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            }
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'done',
+                                'the Department' + name +'has deleted',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/ticket/showdeletedtickets';
+                        })
+                    }
+                })
+            })
+
+            // delete priority
+
+            @*$('button[name="priorityDelete"]').click(function () {
+                var deleteArray = $(this).attr('id').split('_');
+                var id = deleteArray[2];
+                var name = deleteArray[1];
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/priority/delete/" + id,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            }
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'done',
+                                'the Priority' + name +'has deleted',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/ticket/showdeletedtickets';
+                        })
+                    }
+                })
+            })*@
+        });
+
+    </script>
+}

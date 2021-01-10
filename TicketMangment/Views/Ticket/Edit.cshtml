@@ -1,0 +1,371 @@
+﻿@model EditTicketViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@inject UserManager<ApplicationUser> userManger
+
+@{
+    ViewBag.Title = "Edit Ticket";
+
+}
+
+<form enctype="multipart/form-data" asp-controller="ticket" asp-action="Edit" method="post" class="m-3">
+
+
+
+    <div class="col-sm-10">
+        <input asp-for="TicketId" hidden class="form-control" />
+    </div>
+
+
+    <div class="form-group row">
+        <label asp-for="Subject" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Subject" class="form-control" placeholder="Ticket Subject" />
+            <span asp-validation-for="Subject" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label asp-for="RequestDetail" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <textarea asp-for="RequestDetail" class="form-control" placeholder="Request details"></textarea>
+            <span asp-validation-for="RequestDetail" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label asp-for="Location" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Location" class="form-control" placeholder="Location" />
+            <span asp-validation-for="Location" class="text-danger"></span>
+        </div>
+    </div>
+
+
+    @*<div class="form-group row">
+                <label class="col-sm-2 col-form-label">Notes for this Ticket</label>
+                <div class="col-sm-10">
+                    <div class="d-flex flex-column" id="notesDiv">
+                        @if (Model.Notes.Any())
+                        {
+                            @foreach (var note in Model.Notes)
+                            {
+                                <pre class="alert alert-info p-2">@note.NoteBody</pre>
+                            }
+                        }
+                        else
+                        {
+                            <b>There is no notes created yet!</b>
+                        }
+                        </div>
+
+                </div>
+            </div>
+
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Create new Note</label>
+
+            <div class="col-sm-10">
+                <button type="button" id="addNote" class="btn btn-primary btn-round">Add Note</button>
+
+            </div>
+        </div>*@
+
+    <div class="form-group row">
+        <label asp-for="DepartmentId" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <select class="form-control" asp-for="DepartmentId" asp-items="@ViewBag.departments">
+                @*<option>Please select one</option>*@
+            </select>
+            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label asp-for="TicketStatus" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <select asp-for="TicketStatus" asp-items="Html.GetEnumSelectList<TicketStatus>()" class="form-control">
+                @*<option selected="selected" value="">Please select</option>*@
+            </select>
+            <span asp-validation-for="TicketStatus" class="text-danger"></span>
+        </div>
+    </div>
+
+    @if (Model.User.DepartmentId == Model.DepartmentId && Model.Department.DepAdmin == Model.User.Id
+     /*Model.User.InDepRole.Value.ToString() == "Admin"*/)
+    {
+        <div class="form-group row">
+            <label asp-for="Priorities" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <select class="form-control" asp-for="PriorityId"
+                        asp-items="@ViewBag.priorities">
+                    <option value="@null">Please select one</option>
+                </select>
+                <span asp-validation-for="Priorities" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label asp-for="AssignedTo" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <select class="form-control" asp-for="AssignedTo"
+                        asp-items="@(new SelectList(ViewBag.Users,"Id","UserName"))">
+                    <option value="@null">Please select one</option>
+                </select>
+                <span asp-validation-for="AssignedTo" class="text-danger"></span>
+            </div>
+        </div>
+    }
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </div>
+
+
+
+    <div>
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-primary top-icon nav-justified">
+                    <li class="nav-item">
+                        <a href="javascript:void();" data-target="#logs" data-toggle="pill" class="nav-link active">
+                            <i class="fa fa-clock-o"></i> <span class="hidden-xs">Recent Activity</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="javascript:void();" data-target="#notes" data-toggle="pill" class="nav-link">
+                            <i class="icon-envelope-open"></i> <span class="hidden-xs">Notes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="javascript:void();" data-target="#attachments" data-toggle="pill" class="nav-link">
+                            <i class="icon-note"></i> <span class="hidden-xs">Attachments</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content p-3">
+                    <div class="tab-pane active" id="logs">
+
+                        <div class="col-md-12">
+                            <h5 class="mt-2 mb-3"><span class="fa fa-clock-o ion-clock float-right"></span> Recent Activity</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped">
+                                    <tbody>
+                                        @if (Model.TicketLogs.Any())
+                                        {
+                                            @foreach (var log in Model.TicketLogs)
+                                            {
+                                                <tr class="hnslogs">
+                                                    <td>
+                                                        <span class="float-right font-weight-bold">@log.LogDate</span>
+                                                        <strong>"@await userManger.FindByIdAsync(log.UserLog)"</strong>
+                                                        @log.Message
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>we couldn't find any logs for this ticket.</strong>
+                                                </td>
+                                            </tr>
+                                        }
+
+
+                                    </tbody>
+                                </table>
+                                <a id="showMorelogs" href="javascript:void();">Show more...</a>
+                                <a id="showLesslogs" href="javascript:void();">Show less...</a>
+                            </div>
+                        </div>
+
+                        <!--/row-->
+                    </div>
+                    <div class="tab-pane" id="notes">
+                        <div class="alert alert-info alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <div class="alert-icon">
+                                <i class="icon-info"></i>
+                            </div>
+                            <div class="alert-message">
+                                <span><strong>Info!</strong> Here you can add notes to the ticket.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Create new Note</label>
+                            <div class="col-sm-10">
+                                <a href="javascript:void();" id="addNote" class="btn btn-primary btn-round btn-sm"
+                                   onclick="addNote(this)" ticketid="@Model.TicketId">Add Note</a>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table id="notesTable" class="table table-hover table-striped">
+                                <tbody>
+                                    @if (Model.Notes.Any())
+                                    {
+                                        if (Model.Notes.Count() >= 4)
+                                        {
+
+                                        }
+                                        @foreach (var note in Model.Notes.Reverse())
+                                        {
+                                            <tr class="hns">
+                                                <td>
+                                                    <span class="float-right font-weight-bold">@note.CreatedDate</span>
+                                                    @note.NoteBody
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td>
+                                                <b>There is no notes created yet!</b>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <a id="showMore" href="javascript:void();"></a>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="attachments">
+
+
+
+
+                        <div class="table-responsive">
+                            <table id="notesTable" class="table table-hover table-striped">
+                                <tbody>
+                                    @if (Model.Attachments.Any())
+                                    {
+                                        @foreach (var file in Model.Attachments.Reverse())
+                                        {
+                                            <tr class="hns">
+                                                <td>
+                                                    @file.FileName
+                                                </td>
+                                                <td>
+                                                    <a asp-controller="ticket" asp-action="DownloadFile"
+                                                       asp-route-id="@file.Id" class="btn btn-primary">Download</a>
+                                                </td>
+
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td>
+                                                <b>There is no Attachment for this ticket!</b>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <div class="form-group">
+                                <label asp-for="Files"></label>
+                                <div>
+                                    <div class="custom-file">
+                                        <input asp-for="Files" class="custom-file-input form-control">
+                                        <label class="custom-file-label">Click here to add files</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@section Scripts{
+    <script src="~/js/CustomScript.js"></script>
+
+    <script type="text/javascript">
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+            var i = 5;
+            var showtr = $('.hns');
+            var showtrlogs = $('.hnslogs');
+            $('#showMorelogs').hide();
+            $('#showLesslogs').hide();
+            //console.log(showtr.length);
+            if (showtr.length > 5) {
+                $('.hns').hide();
+                $('.hns:nth-child(-n+5)').show();
+                $('#showMore').html("<b>Show more...</b>");
+            }
+            if (showtrlogs.length > 4) {
+                $('.hnslogs').hide();
+                $('.hnslogs:nth-child(-n+5)').show();
+                $('#showMorelogs').show();
+            }
+
+
+            // this click event for show more items in notes
+            $('#showMore').click(function () {
+                if (showtr.length > 5) {
+                    i += 5;
+                    //console.log(i);
+                    if (showtr.length >  i) {
+                        $('.hns:nth-child(-n+'+ i + ')').show();
+                    }
+                    else if (showtr.length <= i  && showtr.length >= i - 1) {
+                        $('.hns').show();
+                        $('#showMore').html('<b>Show less...</b>');
+                    }
+                    else {
+                        $('.hns').hide();
+                        $('.hns:nth-child(-n+5)').show();
+                        $('#showMore').html('<b>Show more...</b>');
+                        i = 5;
+                    }
+                }
+
+            });
+
+
+            // this click event for show more items in logs
+            $('#showMorelogs').click(function () {
+                if (showtrlogs.length > 5) {
+                    i += 5;
+                    console.log(i);
+                    console.log(showtrlogs.length);
+                    if (showtrlogs.length > i) {
+                        $('.hnslogs:nth-child(-n+' + i + ')').show();
+                    }
+                    else if (showtrlogs.length <= i) {
+                        $('.hnslogs').show();
+                        $('#showMorelogs').hide();
+                        $('#showLesslogs').show();
+                        i = 5;
+                    }
+                }
+
+            });
+
+            $('#showLesslogs').click(function () {
+                $('.hnslogs').hide();
+                $('.hnslogs:nth-child(-n+5)').show();
+                $('#showLesslogs').hide();
+                $('#showMorelogs').show();
+            })
+
+    </script>
+}

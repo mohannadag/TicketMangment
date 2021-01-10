@@ -1,0 +1,198 @@
+﻿@model MyTicketsViewModel
+
+@{
+    ViewData["Title"] = "My Tickets";
+}
+
+
+
+
+<div class="card-deck small">
+            @foreach (var ticket in Model.MyTickets)
+            {
+                <div class="card m-3" style="min-width: 18rem; max-width:30.5%;">
+                    <div class="card-header">
+                        <h6>@ticket.Subject</h6>
+                    </div>
+
+                    <div class="card-body text-center">
+
+                        <p class="p"><b>Ticket Details:</b> @ticket.RequestDetail</p>
+                        <p class="p"><b>Ticket Department:</b> @ticket.Department.DepartmentName</p>
+                        <p class="p"><b>Priority:</b> @ticket.Priority.PriorityName</p>
+
+                    </div>
+
+                    <div class="card-footer text-center">
+                        <a asp-controller="ticket" asp-action="details"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary m-1 btn-sm">View</a>
+
+                        <a asp-controller="ticket" asp-action="edit"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-primary m-1 btn-sm">Edit</a>
+                        <a asp-controller="ticket" asp-action="delete"
+                           asp-route-id="@ticket.TicketId"
+                           class="btn btn-danger m-1 btn-sm">Delete</a>
+                    </div>
+                </div>
+            }
+        </div>
+
+<div class="row">
+    <div class="card-deck small col-3">
+        <ol id="col1">
+            @foreach (var ticket in Model.CreatedTickets)
+            {
+
+                <li class="row w-100">
+                    <div class="card m-3">
+                        <div class="card-header">
+                            <h4>@ticket.Subject</h4>
+                        </div>
+
+                        <div class="card-body text-center">
+
+                            <p class="p"><b>Ticket Details:</b> @ticket.RequestDetail</p>
+                            <p class="p"><b>Ticket Department:</b> @ticket.Department.DepartmentName</p>
+                            <p class="p"><b>Priority:</b> @ticket.Priority.PriorityName</p>
+
+                        </div>
+
+                        <div class="card-footer text-center">
+                            <a asp-controller="ticket" asp-action="details"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">View</a>
+
+                            <a asp-controller="ticket" asp-action="edit"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">Edit</a>
+                            <a asp-controller="ticket" asp-action="delete"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-danger btn-sm">Delete</a>
+                        </div>
+                    </div>
+                </li>
+
+            }
+        </ol>
+    </div>
+
+    <div class="card-deck small col-3">
+        <ol id="col2">
+            @foreach (var ticket in Model.CreatedTickets)
+            {
+
+                <li class="row w-100">
+                    <div class="card m-3">
+                        <div class="card-header">
+                            <h4>@ticket.Subject</h4>
+                        </div>
+
+                        <div class="card-body text-center">
+
+                            <p class="p"><b>Ticket Details:</b> @ticket.RequestDetail</p>
+                            <p class="p"><b>Ticket Department:</b> @ticket.Department.DepartmentName</p>
+                            <p class="p"><b>Priority:</b> @ticket.Priority.PriorityName</p>
+
+                        </div>
+
+                        <div class="card-footer text-center">
+                            <a asp-controller="ticket" asp-action="details"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">View</a>
+
+                            <a asp-controller="ticket" asp-action="edit"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-primary btn-sm">Edit</a>
+                            <a asp-controller="ticket" asp-action="delete"
+                               asp-route-id="@ticket.TicketId"
+                               class="btn btn-danger btn-sm">Delete</a>
+                        </div>
+                    </div>
+                </li>
+
+            }
+        </ol>
+        </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/js/addons/jquery-sortable.js"></script>
+    <script type="text/javascript">
+        var adjustment;
+
+        $("#col2").sortable({
+            group: 'simple_with_animation',
+            pullPlaceholder: false,
+            // animation on drop
+            onDrop: function ($item, container, _super) {
+                var $clonedItem = $('<li/>').css({ height: 0 });
+                $item.before($clonedItem);
+                $clonedItem.animate({ 'height': $item.height() });
+
+                $item.animate($clonedItem.position(), function () {
+                    $clonedItem.detach();
+                    _super($item, container);
+                });
+            },
+
+            // set $item relative to cursor position
+            onDragStart: function ($item, container, _super) {
+                var offset = $item.offset(),
+                    pointer = container.rootGroup.pointer;
+
+                adjustment = {
+                    left: pointer.left - offset.left,
+                    top: pointer.top - offset.top
+                };
+
+                _super($item, container);
+            },
+            onDrag: function ($item, position) {
+                $item.css({
+                    left: position.left - adjustment.left,
+                    top: position.top - adjustment.top
+                });
+            }
+        });
+
+
+
+        $("#col1").sortable({
+            group: 'simple_with_animation',
+            pullPlaceholder: false,
+            // animation on drop
+            onDrop: function ($item, container, _super) {
+                var $clonedItem = $('<li/>').css({ height: 0 });
+                $item.before($clonedItem);
+                $clonedItem.animate({ 'height': $item.height() });
+
+                $item.animate($clonedItem.position(), function () {
+                    $clonedItem.detach();
+                    _super($item, container);
+                });
+            },
+
+            // set $item relative to cursor position
+            onDragStart: function ($item, container, _super) {
+                var offset = $item.offset(),
+                    pointer = container.rootGroup.pointer;
+
+                adjustment = {
+                    left: pointer.left - offset.left,
+                    top: pointer.top - offset.top
+                };
+
+                _super($item, container);
+            },
+            onDrag: function ($item, position) {
+                $item.css({
+                    left: position.left - adjustment.left,
+                    top: position.top - adjustment.top
+                });
+            }
+        });
+    </script>
+}
