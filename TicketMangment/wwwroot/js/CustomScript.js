@@ -1,18 +1,4 @@
-﻿function confirmDelete(uniqueId, isTrue) {
-    var deleteSpan = 'deleteSpan_' + uniqueId;
-    var confirmDeleteSpan = 'confirmDeleteSpan_' + uniqueId;
-
-    if (isTrue) {
-        $('#' + deleteSpan).hide();
-        $('#' + confirmDeleteSpan).show();
-    }
-    else {
-        $('#' + deleteSpan).show();
-        $('#' + confirmDeleteSpan).hide();
-    }
-}
-
-/// this function to handle adding note in the edit view of the ticket
+﻿/// this function to handle adding note in the edit view of the ticket
 function addNote(obj) {
     tickid = obj.getAttribute('ticketId');
     Swal.fire({

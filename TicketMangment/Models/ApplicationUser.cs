@@ -13,7 +13,6 @@ namespace TicketMangment.Models
         public int? DepartmentId { get; set; }
         [ForeignKey("DepartmentId")]
         public Department Department { get; set; }
-        //public InDepRole? InDepRole { get; set; }
     }
 
     public enum InDepRole

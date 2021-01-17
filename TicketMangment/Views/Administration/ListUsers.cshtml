@@ -1,5 +1,7 @@
 ﻿@model IEnumerable<ApplicationUser>
 
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
 @{
     ViewBag.Title = "All Users";
 }
@@ -10,36 +12,92 @@
 {
     <a asp-controller="Account" asp-action="Register" class="btn btn-primary mb-3">Add new user</a>
 
-    foreach(var user in Model)
-    {
-        <div class="card mb-3">
-            <div class="card-header">
-                User Id : @user.Id
-            </div>
+    // this section for making the users appear in table
 
-            <div class="card-body">
-                <h5 class="card-title">@user.UserName</h5>
-            </div>
-            
-            <div class="card-footer">
-                <form method="post" asp-controller="administration" asp-action="DeleteUser" asp-route-id="@user.Id">
-                    <a class="btn btn-primary" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+    <div class="card p-2">
+        <div>
+            <table id="paginationFullNumbers" class="table">
+                <thead>
+                    <tr>
+                        <th class="th-sm">
+                            User Name
+                        </th>
+                        <th class="th-sm">
+                            User Department
+                        </th>
+                        <th class="th-sm">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
 
-                    <span id="deleteSpan_@user.Id">
-                         <a class="btn btn-danger"
-                            onclick="confirmDelete('@user.Id',true)">Delete</a>
-                    </span>
 
-                    <span id="confirmDeleteSpan_@user.Id" style="display:none">
-                        <span>Are you sure you want to delete?</span>
-                        <button class="btn btn-danger" type="submit">Yes</button>
-                        <a class="btn btn-primary"
-                           onclick="confirmDelete('@user.Id',false)">No</a>
-                    </span>
-                </form>
-            </div>
+                        <tr>
+                            <td>@user.UserName</td>
+                            <td>@user.Department.DepartmentName</td>
+                            <td>
+                                <a class="btn btn-primary btn-sm m-1" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+                                <form method="post" id="deletForm"
+                                      asp-controller="administration" asp-action="DeleteUser" asp-route-id="@user.Id">
+                                    <a class="btn btn-danger btn-sm m-1" id="delete" onclick="deleteUser(this)" userId="@user.Id">Delete</a>
+                                </form>
+                            </td>
+                        </tr>
+
+
+
+
+
+                        //  this section for making the users appear as cards
+
+                        @*<div class="card mb-3">
+                                <div class="card-header">
+                                    User Id : @user.Id
+                                </div>
+
+                                <div class="card-body">
+                                    <h5 class="card-title">@user.UserName</h5>
+                                </div>
+
+                                <div class="card-footer">
+                                    <form method="post" asp-controller="administration" asp-action="DeleteUser" asp-route-id="@user.Id">
+                                        <a class="btn btn-primary" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+
+                                        <span id="deleteSpan_@user.Id">
+                                            <a class="btn btn-danger"
+                                               onclick="confirmDelete('@user.Id',true)">Delete</a>
+                                        </span>
+
+                                        <span id="confirmDeleteSpan_@user.Id" style="display:none">
+                                            <span>Are you sure you want to delete?</span>
+                                            <button class="btn btn-danger" type="submit">Yes</button>
+                                            <a class="btn btn-primary"
+                                               onclick="confirmDelete('@user.Id',false)">No</a>
+                                        </span>
+                                    </form>
+                                </div>
+                            </div>*@
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th class="th-sm">
+                            User Name
+                        </th>
+                        <th class="th-sm">
+                            User Department
+                        </th>
+                        <th class="th-sm">
+                            Actions
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-    }
+    </div>
 }
 else
 {
@@ -57,5 +115,14 @@ else
 }
 
 @section Scripts{
-    <script src="~/js/CustomScript.js"></script>
- }
+    <script type="text/javascript">
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+    </script>
+    <script src="~/js/UsersViewScript.js"></script>
+
+}
