@@ -9,6 +9,7 @@ namespace TicketMangment.Models
     {
         Department GetDepartment(int Id);
         IEnumerable<Department> GetAllDepartments();
+        IEnumerable<Department> GetAllDepartmentsInCompany(int companyId);
         Department Add(Department department);
         Department Update(Department ChangedDepartment);
         Department Delete(int id);

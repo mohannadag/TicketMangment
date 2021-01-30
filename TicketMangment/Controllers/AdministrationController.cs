@@ -148,7 +148,7 @@ namespace TicketMangment.Controllers
                     ClaimValue = claim.Value
                 };
 
-                // if the user has the claim set set IsSelected property to true,
+                // if the user has the claim set IsSelected property to true,
                 // the checkbox next to the claim is checked on the UI
                 // the c.value can be fix by adding this (c.Value == "true" || c.Value == c.Type) after the &&
                 if (existingUserClaims.Any(c => c.Type == claim.Type /*&& c.Value == "true"*/))
@@ -243,9 +243,11 @@ namespace TicketMangment.Controllers
 
         [HttpGet]
         [Authorize(Policy = "UsersListPolicy")]
-        public IActionResult ListUsers()
+        public async Task<IActionResult> ListUsers()
         {
-            var users = userManager.Users;
+            var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var users = userManager.Users.Include(u => u.Department).Where(u => u.CompanyId == user.CompanyId);
             return View(users);
         }
 
@@ -273,7 +275,6 @@ namespace TicketMangment.Controllers
                 Name = user.UserName,
                 Email = user.Email,
                 DepartmentId = user.DepartmentId,
-                //InDepRole = user.InDepRole,
                 Roles = userRoles,
                 //Claims = userClaims.Select(c => c.Type + " " + c.Value).ToList()
                 Claims = userClaims.Select(c => c.Type).ToList()
@@ -298,7 +299,6 @@ namespace TicketMangment.Controllers
                 user.UserName = model.Name;
                 user.Email = model.Email;
                 user.DepartmentId = model.DepartmentId;
-                //user.InDepRole = model.InDepRole;
 
                 var result = await userManager.UpdateAsync(user);
 
@@ -480,6 +480,8 @@ namespace TicketMangment.Controllers
         {
             var role = await roleManager.FindByIdAsync(id);
 
+            var loggedUser = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
             if (role == null)
             {
                 ViewBag.ErrorMessage = $"Role with id{id} cannot be found";
@@ -497,7 +499,7 @@ namespace TicketMangment.Controllers
                 Claims = roleClaims
             };
 
-            foreach(var user in userManager.Users)
+            foreach(var user in userManager.Users.Where(u => u.CompanyId == loggedUser.CompanyId))
             {
                 if(await userManager.IsInRoleAsync(user, role.Name))
                 {
@@ -555,7 +557,9 @@ namespace TicketMangment.Controllers
 
             var model = new List<UserRoleViewModel>();
 
-            foreach (var user in userManager.Users)
+            var loggedUser = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            foreach (var user in userManager.Users.Where(u => u.CompanyId == loggedUser.CompanyId))
             {
                 var userRoleViewModel = new UserRoleViewModel
                 {
@@ -621,11 +625,6 @@ namespace TicketMangment.Controllers
 
             return RedirectToAction("EditRole", new { Id = roleId });
         }
-
-        //public IActionResult DashBoard()
-        //{
-        //    return View();
-        //}
 
     }
 }

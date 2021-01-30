@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using TicketMangment.Models;
 using TicketMangment.ViewModel;
 
@@ -19,14 +20,19 @@ namespace TicketMangment.Controllers
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly IDepartmentRepo departmentRepo;
         private readonly IHostingEnvironment hostingEnvironment;
+        private readonly ICompanyRepo companyRepo;
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-                                IDepartmentRepo departmentRepo, IHostingEnvironment hostingEnvironment)
+                                IDepartmentRepo departmentRepo, IHostingEnvironment hostingEnvironment, ICompanyRepo companyRepo,
+                                ILogger<AccountController> logger)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.departmentRepo = departmentRepo;
             this.hostingEnvironment = hostingEnvironment;
+            this.companyRepo = companyRepo;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -49,11 +55,26 @@ namespace TicketMangment.Controllers
         {
             if(ModelState.IsValid)
             {
+                var company = new Company
+                {
+                    Name = model.CompanyName,
+                    Email = model.CompanyEmail,
+                    Address = model.Address,
+                    PhoneNumber = model.CompanyPhoneNumber,
+                    CreateDate = DateTime.Now
+                };
+
+                var newcompany = companyRepo.Add(company);
+
                 var user = new ApplicationUser
                 {
                     UserName = model.Name,
-                    Email = model.Email
+                    Email = model.Email,
+                    CompanyId = newcompany.Id
                 };
+
+                
+
                 var result = await userManager.CreateAsync(user, model.Password);
                 if(result.Succeeded)
                 {
@@ -87,22 +108,32 @@ namespace TicketMangment.Controllers
         {
             if(ModelState.IsValid)
             {
-                var result = await signInManager.PasswordSignInAsync(model.UserName, model.Password,
-                    model.RememberMe, false);
+                try { 
+                    var result = await signInManager.PasswordSignInAsync(model.UserName, model.Password,
+                        model.RememberMe, false);
 
-                if(result.Succeeded)
-                {
-                    if(!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    if(result.Succeeded)
                     {
-                        return Redirect(returnUrl);
+                        if(!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        {
+                            return Redirect(returnUrl);
+                        }
+                        else
+                        {
+                            return RedirectToAction("index", "home");
+                        }
                     }
-                    else
-                    {
-                        return RedirectToAction("index", "home");
-                    }
+
+                    ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
                 }
-
-                ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+                catch(Exception ex)
+                {
+                    logger.LogError($"Exception occured: {ex}");
+                    ViewBag.ErrorTitle = $"cannot sign in with this username {model.UserName}";
+                    ViewBag.ErrorMessage = $"please wait and try again later if this problem keep happening " +
+                        $"to you please contact the developer at ag.mohannad@gmail.com and thank you for you patient";
+                    return View("Error");
+                }
             }
             return View(model);
         }

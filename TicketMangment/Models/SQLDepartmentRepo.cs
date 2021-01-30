@@ -36,6 +36,11 @@ namespace TicketMangment.Models
             return context.Departments.Where(d => d.RecordStatus == RecordStatus.notdeleted);
         }
 
+        public IEnumerable<Department> GetAllDepartmentsInCompany(int companyId)
+        {
+            return context.Departments.Where(d => d.RecordStatus == RecordStatus.notdeleted && d.CompanyId == companyId);
+        }
+
         public IEnumerable<Department> ShowAllDepartments()
         {
             return context.Departments;

@@ -10,6 +10,8 @@ namespace TicketMangment.ViewModel
 {
     public class RegisterViewModel
     {
+
+        // user properties
         [Required]
         public string Name { get; set; }
         [Required]
@@ -23,5 +25,23 @@ namespace TicketMangment.ViewModel
         [Display(Name ="Confirm Password")]
         [Compare("Password",ErrorMessage ="Password and confirm password do not match")]
         public string ConfirmPassword { get; set; }
+
+        // company properties
+        [Required]
+        [Display (Name ="Company Name")]
+        public string CompanyName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        [Remote(action: "IsEmailInUse", controller: "Account")]
+        [Display (Name ="Company Email")]
+        public string CompanyEmail { get; set; }
+
+        [Display (Name ="Company Address")]
+        public string Address { get; set; }
+
+        [Required]
+        [Display (Name ="Company Phone Number")]
+        public string CompanyPhoneNumber { get; set; }
     }
 }

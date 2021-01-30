@@ -91,6 +91,7 @@ namespace TicketMangment
             services.AddScoped<ITicketRepo, SQLTicketRepo>();
             services.AddScoped<IDepartmentRepo, SQLDepartmentRepo>();
             services.AddScoped<IPriorityRepo, SQLPriorityRepo>();
+            services.AddScoped<ICompanyRepo, SQLCompanyRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

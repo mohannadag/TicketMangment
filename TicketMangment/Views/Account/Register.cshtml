@@ -60,8 +60,54 @@
                 </div>
 
                 <div class="form-group">
+                    <label asp-for="CompanyName" class="sr-only"></label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="CompanyName" class="form-control input-shadow" placeholder="Enter Your Company Name">
+                        <div class="form-control-position">
+                            <i class="icon-user"></i>
+                        </div>
+
+                        <span asp-validation-for="CompanyName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CompanyEmail" class="sr-only"></label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="CompanyEmail" class="form-control input-shadow" placeholder="Enter Your Company Email">
+                        <div class="form-control-position">
+                            <i class="icon-envelope-open"></i>
+                        </div>
+
+                        <span asp-validation-for="CompanyEmail" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Address" class="sr-only"></label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="Address" class="form-control input-shadow" placeholder="Enter Your Company Address">
+                        <div class="form-control-position">
+                            <i class="icon-envelope-open"></i>
+                        </div>
+
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CompanyPhoneNumber" class="sr-only"></label>
+                    <div class="position-relative has-icon-right">
+                        <input asp-for="CompanyPhoneNumber" class="form-control input-shadow" placeholder="Enter Your Company Phone Number">
+                        <div class="form-control-position">
+                            <i class="icon-envelope-open"></i>
+                        </div>
+
+                        <span asp-validation-for="CompanyPhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <div class="icheck-material-white">
-                        <input type="checkbox" id="user-checkbox" checked="" />
+                        <input type="checkbox" id="user-checkbox" checked="checked" />
                         <label for="user-checkbox">I Agree With Terms & Conditions</label>
                     </div>
                 </div>

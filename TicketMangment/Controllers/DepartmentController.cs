@@ -28,9 +28,12 @@ namespace TicketMangment.Controllers
             this.ticketRepo = ticketRepo;
         }
         // GET: DepartmentController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var model = departmentRepo.GetAllDepartments();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await userManager.FindByIdAsync(userId);
+
+            var model = departmentRepo.GetAllDepartmentsInCompany(user.CompanyId);
             return View(model);
         }
 
@@ -38,7 +41,7 @@ namespace TicketMangment.Controllers
         public ActionResult Details(int id)
         {
             Department department = departmentRepo.GetDepartment(id);
-            if (department == null)
+            if (department == null && department.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Department with id = " + id + " is not found";
@@ -78,16 +81,18 @@ namespace TicketMangment.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(string departmentName)
+        public async Task<ActionResult> Create(string departmentName)
         {
+            var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             Department department1 = new Department
             {
                 DepartmentName = departmentName,
                 RecordStatus = RecordStatus.notdeleted,
                 CreateDate = DateTime.Now,
-                CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                };
+                CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                CompanyId = user.CompanyId
+            };
                 departmentRepo.Add(department1);
             //return RedirectToAction("details", new { id = department1.DepartmentId });
             return Ok();
@@ -96,11 +101,20 @@ namespace TicketMangment.Controllers
         }
 
         // GET: DepartmentController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
             Department department = departmentRepo.GetDepartment(id);
 
-            var tickets = ticketRepo.GetAllTickets().Where(t => t.DepartmentId == id);
+            if (department == null && department.RecordStatus == RecordStatus.deleted)
+            {
+                Response.StatusCode = 404;
+                ViewBag.ErrorMessage = "Department with id = " + id + " is not found";
+                return View("NotFound");
+            }
+
+            var loggedUser = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var tickets = ticketRepo.GetAllTicketsInCompany(loggedUser.CompanyId).Where(t => t.DepartmentId == id);
 
             Department department1 = new Department
             {
@@ -142,7 +156,7 @@ namespace TicketMangment.Controllers
         public ActionResult Edit(int id, string newName)
         {
             Department department1 = departmentRepo.GetDepartment(id);
-            if (department1 != null)
+            if (department1 != null && department1.RecordStatus != RecordStatus.deleted)
             {
                 //Department department1 = departmentRepo.GetDepartment(id);
                 //there is no need to put the next line becuse we don't need the user to chang id
@@ -179,6 +193,11 @@ namespace TicketMangment.Controllers
             department.RecordStatus = RecordStatus.deleted;
             department.ModifyDate = DateTime.Now;
             departmentRepo.Update(department);
+
+            //foreach (var user in userManager.Users.Where(u => u.DepartmentId == department.DepartmentId))
+            //{
+            //    user.DepartmentId = null;
+            //}
             //departmentRepo.Delete(department.DepartmentId);
             return Ok();
         }
@@ -221,7 +240,7 @@ namespace TicketMangment.Controllers
 
 
         [HttpGet]
-        public ActionResult AddUserToDep(int id)
+        public async Task<ActionResult> AddUserToDep(int id)
         {
             ViewBag.departmentId = id;
 
@@ -233,10 +252,12 @@ namespace TicketMangment.Controllers
                 return View("NotFound");
             }
 
-            ViewBag.Users = userManager.Users.Where(u => u.DepartmentId == department.DepartmentId).ToList();
+            var loggedUser = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            ViewBag.Users = userManager.Users.Where(u => u.DepartmentId == id && u.CompanyId == loggedUser.CompanyId).ToList();
             List<AddUserToDepViewModel> model = new List<AddUserToDepViewModel>();
 
-            foreach (var user in userManager.Users)
+            foreach (var user in userManager.Users.Where(u => u.CompanyId == loggedUser.CompanyId))
             {
                 var userRoleViewModel = new UserRoleViewModel
                 {
@@ -252,7 +273,7 @@ namespace TicketMangment.Controllers
                 {
                     userRoleViewModel.IsSelected = false;
                 }
-                if(user.Id == department.DepAdmin)
+                if (user.Id == department.DepAdmin)
                 {
                     userRoleViewModel.DepAdmin = user.Id;
                 }
@@ -292,7 +313,7 @@ namespace TicketMangment.Controllers
                 if (model[i].AssignTo != null)
                 {
                     //var tickets = ticketRepo.GetAllTickets().Where(t => t.AssignedTo == user.Id);
-                    foreach (var ticket in ticketRepo.GetAllTickets().Where(t => t.AssignedTo == user.Id))
+                    foreach (var ticket in ticketRepo.GetAllTicketsInCompany(user.CompanyId).Where(t => t.AssignedTo == user.Id))
                     {
                         ticket.AssignedTo = model[i].AssignTo;
                         ticketRepo.Update(ticket);

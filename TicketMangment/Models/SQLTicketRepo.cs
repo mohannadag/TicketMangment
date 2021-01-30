@@ -40,6 +40,16 @@ namespace TicketMangment.Models
             return (context.Tickets.Include(t => t.Department).Include(t => t.Priority).AsNoTracking()).ToList();
         }
 
+        public IEnumerable<Ticket> GetAllTicketsInCompany(int companyId)
+        {
+            // return context.Tickets.Where(t => t.RecordStatus == RecordStatus.notdeleted && t.CompanyId == companyId);
+
+            return context.Tickets.Include(t => t.Department)
+                                  .Include(t => t.Priority)
+                                  .AsNoTracking().Where(t => t.RecordStatus == RecordStatus.notdeleted && t.CompanyId == companyId)
+                                  .ToList();
+        }
+
         public IEnumerable<Ticket> ShowAllTickets()
         {
             return context.Tickets;
@@ -53,6 +63,9 @@ namespace TicketMangment.Models
                 .Include(t => t.User)
                 .Include(t => t.AssignedUser)
                 .FirstOrDefault(r => r.TicketId == Id);
+
+            //var ticket = context.Tickets.Find(Id);
+
             //var ticket = context.Tickets.Find(Id);
             ////ticket.Department = context.Departments.Find(ticket.DepartmentId);  // I can use this or the method GetDepartment in the controller
             //ticket.Priority = context.Priorities.Find(ticket.PriorityId);

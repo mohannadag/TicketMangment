@@ -26,6 +26,7 @@ namespace TicketMangment.Models
         public DbSet<Note> Notes { get; set; }
         public DbSet<TicketLogs> TicketLogs { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
+        public DbSet<Company> Companies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

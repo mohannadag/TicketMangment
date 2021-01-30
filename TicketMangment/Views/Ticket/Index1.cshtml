@@ -1,0 +1,338 @@
+﻿@model TicketsViewModel
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@inject UserManager<ApplicationUser> userManger
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "All Tickets";
+}
+
+
+    <a asp-controller="ticket" asp-action="create"
+       class="btn btn-primary mb-3">Create New Ticket</a>
+
+<div>
+    <div class="card">
+        <div class="card-body">
+
+            <ul class="nav nav-tabs nav-tabs-primary top-icon nav-justified">
+                <li class="nav-item">
+                    <a href="javascript:void();" data-target="#MyTickets" data-toggle="pill" class="nav-link active">
+                        <i class="zmdi zmdi-card"></i> <span class="hidden-xs">My Tickets (@Model.MyTickets.Count())</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="javascript:void();" data-target="#DepartmentTickets" data-toggle="pill" class="nav-link">
+                        <i class="zmdi zmdi-card"></i> <span class="hidden-xs">DepartmentTickets (@Model.DepartmentTickets.Count())</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content p-3">
+                <div class="tab-pane active" id="MyTickets">
+
+                    <div class="col-md-12">
+                        <h5 class="mt-2 mb-3">My Tickets</h5>
+                        <div class=" table-responsive-lg">
+                            <table id="paginationFullNumbers" class="table table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th class="th-sm">
+                                            #
+                                        </th>
+                                        <th class="th-sm">
+                                            Ticket Subject
+                                        </th>
+                                        <th class="th-sm">
+                                            Details
+                                        </th>
+                                        <th class="th-sm">
+                                            Priority
+                                        </th>
+                                        <th class="th-sm">
+                                            Status
+                                        </th>
+                                        <th class="th-sm">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:small">
+                                    @foreach (var ticket in Model.MyTickets)
+                                    {
+                                        //var deleteId = "delete_" + ticket.TicketId;
+
+
+                                        <tr>
+                                            <td>@ticket.TicketId</td>
+                                            <td>
+                                                @ticket.Subject
+                                                <p class="text-info" >
+                                                    Created by @await userManger.FindByIdAsync(ticket.CreatedBy) <br />at @ticket.CreateDate
+
+                                                    @if (ticket.ModifiedBy != null)
+                                                    {
+
+                                                        <br />
+                                                        <span>Modified by @await userManger.FindByIdAsync(ticket.ModifiedBy) <br />at @ticket.ModifyDate</span>
+
+                                                    }
+                                                </p>
+
+                                            </td>
+                                            @*<td>@ticket.RequestDetail.Substring(0, 2)</td>*@
+                                            <td class="text-wrap">
+                                                @if (ticket.RequestDetail.Length >= 80)
+                                                {
+                                                    @ticket.RequestDetail.Substring(0, 80)
+                                                    <text> ... </text>
+                                                }
+                                                else
+                                                {
+                                                    @ticket.RequestDetail
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (ticket.Priority == "High")
+                                                {
+                                                    <span class="badge badge-secondary">@ticket.Priority</span>
+                                                }
+                                                else if (ticket.Priority == "Urgent")
+                                                {
+                                                    <span class="badge badge-danger">@ticket.Priority</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">@ticket.Priority</span>
+                                                }
+
+                                            </td>
+                                            <td>@ticket.TicketStatus</td>
+                                            <td>
+
+                                                <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">View</a><br />
+                                                <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
+                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">Edit</a><br />
+                                                <a class="btn btn-danger btn-sm" name="delete"
+                                                   subject="@ticket.Subject" onclick="deleteTicket(this)"
+                                                   ticketId="@ticket.TicketId" style="width:70px;">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!--/row-->
+                </div>
+                <div class="tab-pane" id="DepartmentTickets">
+                    <div class="col-md-12">
+                        <h5 class="mt-2 mb-3">Department Tickets</h5>
+                        <div class="table-responsive-lg">
+                            <table id="paginationFullNumbers1" class="table table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th class="th-sm">
+                                            #
+                                        </th>
+                                        <th class="th-sm">
+                                            Ticket Subject
+                                        </th>
+                                        <th class="th-sm">
+                                            Details
+                                        </th>
+                                        <th class="th-sm">
+                                            Priority
+                                        </th>
+                                        <th class="th-sm">
+                                            Status
+                                        </th>
+                                        <th class="th-sm">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size:small">
+                                    @foreach (var ticket in Model.DepartmentTickets)
+                                    {
+                                        //var deleteId = "delete_" + ticket.TicketId;
+
+
+                                        <tr>
+                                            <td>@ticket.TicketId</td>
+                                            <td>
+                                                @ticket.Subject
+                                                <p class="text-info" style="font-size:small">
+                                                    Created by @await userManger.FindByIdAsync(ticket.CreatedBy) <br />at @ticket.CreateDate
+
+                                                    @if (ticket.ModifiedBy != null)
+                                                    {
+
+                                                        <br />
+                                                        <span>Modified by @await userManger.FindByIdAsync(ticket.ModifiedBy) <br />at @ticket.ModifyDate</span>
+
+                                                    }
+                                                </p>
+
+                                            </td>
+                                            @*<td>@ticket.RequestDetail.Substring(0, 2)</td>*@
+                                            <td class="text-wrap">
+                                                @if (ticket.RequestDetail.Length >= 80)
+                                                {
+                                                    @ticket.RequestDetail.Substring(0, 80)
+                                                    <text> ... </text>
+                                                }
+                                                else
+                                                {
+                                                    @ticket.RequestDetail
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (ticket.Priority == "High")
+                                                {
+                                                    <span class="badge badge-secondary">@ticket.Priority</span>
+                                                }
+                                                else if (ticket.Priority == "Urgent")
+                                                {
+                                                    <span class="badge badge-danger">@ticket.Priority</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-success">@ticket.Priority</span>
+                                                }
+
+                                            </td>
+                                            <td>@ticket.TicketStatus</td>
+                                            <td>
+
+                                                <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">View</a><br />
+                                                <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
+                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">Edit</a><br />
+                                                <a class="btn btn-danger btn-sm" name="delete"
+                                                   subject="@ticket.Subject" onclick="deleteTicket(this)"
+                                                   ticketId="@ticket.TicketId" style="width:70px;">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+        @functions{
+            public string GetAntiXsrfRequestToken()
+            {
+                return Xsrf.GetAndStoreTokens(Context).RequestToken;
+            }
+        }
+
+        $(document).ready(function () {
+            //Pagination full Numbers
+            $('#paginationFullNumbers').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+
+        $(document).ready(function () {
+            //Pagination full Numbers
+            $('#paginationFullNumbers1').DataTable({
+                "pagingType": "full_numbers"
+            });
+            $('.dataTables_length').addClass('bs-select');
+        });
+
+        @*$(document).ready(function () {
+            $('button[name="delete"]').click(function () {
+                var deleteArray = $(this).attr('id').split('_');
+                var id = deleteArray[1];
+                var name = $(this).attr('subject');
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/ticket/delete/" + id,
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            }
+                        }).fail(function () {
+                            Swal.fire(
+                                'Error!',
+                                'someting went wrong please try again later.',
+                                'error'
+                            )
+                        }).done(function () {
+                            Swal.fire(
+                                'done',
+                                'the Ticket' + name +'has deleted',
+                                'success'
+                            )
+                        }).done(function () {
+                            window.location.href = '/ticket/index';
+                        })
+                    }
+                })
+            })
+        });*@
+
+        function deleteTicket(obj) {
+            var deletedID = obj.getAttribute('ticketId');
+            var name = obj.getAttribute('subject');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/ticket/delete/" + deletedID,
+                        method: "POST",
+                        headers: {
+                            "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                        }
+                    }).fail(function () {
+                        Swal.fire(
+                            'Error!',
+                            'someting went wrong please try again later.',
+                            'error'
+                        )
+                    }).done(function () {
+                        Swal.fire(
+                            'done',
+                            'the Ticket' + name + 'has deleted',
+                            'success'
+                        )
+                    }).done(function () {
+                        window.location.href = '/ticket/index';
+                    })
+                }
+            })
+        }
+
+    </script>
+}

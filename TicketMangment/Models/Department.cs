@@ -29,5 +29,6 @@ namespace TicketMangment.Models
         [NotMapped]
         public List<string> ListOfUsersName { get; set; }
         public string DepAdmin { get; set; }
+        public int CompanyId { get; set; }
     }
 }

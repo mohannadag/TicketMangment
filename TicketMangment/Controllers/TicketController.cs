@@ -42,24 +42,29 @@ namespace TicketMangment.Controllers
             //this.roleManager = roleManager;
         }
         // GET: TicketController
-        public ActionResult Index([Optional] string getAllTickets)
+        public async Task<ActionResult> Index([Optional] string getAllTickets)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await userManager.FindByIdAsync(userId);
+
             if (getAllTickets != null)
             {
                 if (getAllTickets.ToLower() == "all")
                 { 
-                    var model = ticketRepo.GetAllTickets();
+                    var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId);
                     return View(model);
                 }
                 else
                 {
-                    var model = ticketRepo.GetAllTickets().Where(t => t.RecordStatus == RecordStatus.notdeleted);
+                    var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId)
+                        .Where(t => t.RecordStatus == RecordStatus.notdeleted);
                     return View(model);
                 }
             }
             else
             {
-                var model = ticketRepo.GetAllTickets().Where(t => t.RecordStatus == RecordStatus.notdeleted);
+                var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId).
+                    Where(t => t.RecordStatus == RecordStatus.notdeleted);
                 return View(model);
             }
 
@@ -71,9 +76,10 @@ namespace TicketMangment.Controllers
             Ticket ticket = ticketRepo.GetTicket(id);
             //ticket.Department = ticketRepo.GetDepartment(ticket.DepartmentId);
 
-            if(ticket == null)
+            if(ticket == null && ticket.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
+                ViewBag.ErrorMessage = "Ticket with id = " + id + " is not found";
                 return View("NotFound");
             }
             //ViewBag.path = HttpContext.Request.Path;
@@ -108,13 +114,14 @@ namespace TicketMangment.Controllers
         // POST: TicketController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(TicketCreatViewModel model)
+        public async Task<ActionResult> Create(TicketCreatViewModel model)
         {
             
             try
             {
                 if (ModelState.IsValid)
                 {
+                    var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
                     Ticket newticket = new Ticket
                     {
@@ -128,7 +135,8 @@ namespace TicketMangment.Controllers
                         PriorityId = model.PriorityId,
                         AssignedTo = model.AssignedTo,
                         TicketStatus = TicketStatus.Open,
-                        RecordStatus = RecordStatus.notdeleted
+                        RecordStatus = RecordStatus.notdeleted,
+                        CompanyId = user.CompanyId
                     };
                     Ticket ticket = ticketRepo.Add(newticket);
 
@@ -154,8 +162,9 @@ namespace TicketMangment.Controllers
                 }
                 return View();
             }
-            catch
+            catch (Exception ex)
             {
+                // TODO: log the exeption in the log file
                 return View();
             }
         }
@@ -164,6 +173,14 @@ namespace TicketMangment.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             Ticket ticket = ticketRepo.GetTicket(id);
+
+            if (ticket == null && ticket.RecordStatus == RecordStatus.deleted)
+            {
+                Response.StatusCode = 404;
+                ViewBag.ErrorMessage = "Ticket with id = " + id + " is not found";
+                return View("NotFound");
+            }
+
             EditTicketViewModel model = new EditTicketViewModel
             {
                 TicketId = ticket.TicketId,
@@ -199,12 +216,8 @@ namespace TicketMangment.Controllers
 
 
                 Ticket ticket = ticketRepo.GetTicket(model.TicketId);
-                //ticket.UserId = model.UserId;
                 ticket.Location = model.Location;
-                //ticket.Photo = model.Photo;
-                //ticket.Priority = model.Priority;
                 ticket.RequestDetail = model.RequestDetail;
-                //ticket.Department = model.Department;
                 ticket.Subject = model.Subject;
                 ticket.DepartmentId = model.DepartmentId;
                 ticket.AssignedTo = model.AssignedTo;
@@ -212,10 +225,6 @@ namespace TicketMangment.Controllers
                 ticket.ModifiedBy = user.Id;
                 ticket.ModifyDate = DateTime.Now;
 
-                //if (ticket.AssignedTo != null)
-                //{
-                //    ticket.TicketStatus = TicketStatus.Asssigned;
-                //}
                 if (model.NoteBody != null)
                 { 
                     Note note = new Note
@@ -259,12 +268,11 @@ namespace TicketMangment.Controllers
                         "please see your ticket and confirm the fix by folow this link " + "https://localhost:44333/ticket/details/6");
                 }
 
-                // if the ticketstatus is solved we need to do 
-                // something like send email or notefication to 
+                // TODO: if the ticketstatus is solved we need to do something
+                // like send email or notefication to 
                 // the user whom created the ticket to approve 
                 // that the problem has solved and close the ticket
 
-                
                 return RedirectToAction("index");
             }
             return View();
@@ -318,8 +326,8 @@ namespace TicketMangment.Controllers
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // will give the user's userId
             var user = await userManager.FindByIdAsync(userId);
-            var tickets = ticketRepo.GetTicketsByUser(userId).Where(t => t.DepartmentId == user.DepartmentId)
-                .Where(t => t.RecordStatus == RecordStatus.notdeleted); // Get all tickets the user assigned to
+            var tickets = ticketRepo.GetTicketsByUser(userId).Where(t => t.DepartmentId == user.DepartmentId &&
+            t.RecordStatus == RecordStatus.notdeleted); // Get all tickets the user assigned to
             var createdTickets = ticketRepo.GetTicketsByUserId(userId); // Get all tickets created by the user
             if (tickets == null)
             {
@@ -336,6 +344,7 @@ namespace TicketMangment.Controllers
         }
 
         // I can use this method when i need to add notes in the edit method
+        // TODO: move this method to sepreate class and create new class to handle note model with database (not inside the SQLticket)
         [HttpPost]
         public ActionResult CreatNote(string model)
         {
@@ -560,26 +569,61 @@ namespace TicketMangment.Controllers
             return chart;
         }
 
-        //public ActionResult CreateTicketLog(int ticketId, string userId, string message)
-        //{
-        //    if(ticketId != null && userId != null && message != null)
-        //    {
-        //        var log = new TicketLogs
-        //        {
-        //            TicketId = ticketId,
-        //            UserLog = userId,
-        //            Message = message
-        //        };
-        //        ticketRepo.CreateTicketLog(log);
-        //        return Ok();
-        //    }
-        //    else
-        //    {
-        //        return BadRequest();
-        //    }
+        public async Task<ActionResult> Index1()
+        {
+            var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var allTickets = ticketRepo.GetAllTicketsInCompany(user.CompanyId);
+            List<ShowTicketsViewModel> departmentTickets = new List<ShowTicketsViewModel>();
+            List<ShowTicketsViewModel> myTickets = new List<ShowTicketsViewModel>();
+
+            foreach (var ticket in allTickets.Where(t => t.DepartmentId == user.DepartmentId))
+            {
+                ShowTicketsViewModel item = new ShowTicketsViewModel
+                {
+                    TicketId = ticket.TicketId,
+                    TicketStatus = ticket.TicketStatus,
+                    AssignedTo = ticket.AssignedTo,
+                    CreateDate = ticket.CreateDate,
+                    CreatedBy = ticket.CreatedBy,
+                    ModifiedBy = ticket.ModifiedBy,
+                    ModifyDate = ticket.ModifyDate,
+                    Notes = ticket.Notes,
+                    Priority = ticket.Priority.PriorityName,
+                    RequestDetail = ticket.RequestDetail,
+                    Subject = ticket.Subject
+                };
+                departmentTickets.Add(item);
+            }
+
+            foreach (var ticket in allTickets.Where(t => t.AssignedTo == user.Id))
+            {
+                ShowTicketsViewModel item = new ShowTicketsViewModel
+                {
+                    TicketId = ticket.TicketId,
+                    TicketStatus = ticket.TicketStatus,
+                    AssignedTo = ticket.AssignedTo,
+                    CreateDate = ticket.CreateDate,
+                    CreatedBy = ticket.CreatedBy,
+                    ModifiedBy = ticket.ModifiedBy,
+                    ModifyDate = ticket.ModifyDate,
+                    Notes = ticket.Notes,
+                    Priority = ticket.Priority.PriorityName,
+                    RequestDetail = ticket.RequestDetail,
+                    Subject = ticket.Subject
+                };
+                myTickets.Add(item);
+            }
+
+            TicketsViewModel model = new TicketsViewModel
+            {
+                DepartmentTickets = departmentTickets,
+                MyTickets = myTickets
+            };
 
 
-        //}
+            return View(model);
+        }
 
     }
 }

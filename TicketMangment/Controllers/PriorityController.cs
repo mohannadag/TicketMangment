@@ -30,10 +30,11 @@ namespace TicketMangment.Controllers
         public ActionResult Details(int id)
         {
             Priority priority = priorityRepo.GetPriority(id);
-            if(priority == null)
+            if(priority == null && priority.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
-                return View("prioritynotfound", priority.PriorityId);
+                ViewBag.ErrorMessage = "Priority with id = " + id + " is not found";
+                return View("NotFound");
             }
 
             return View(priority);
@@ -110,6 +111,14 @@ namespace TicketMangment.Controllers
         public ActionResult Edit(int id, string newName)
         {
             Priority priority = priorityRepo.GetPriority(id);
+
+            if (priority == null && priority.RecordStatus == RecordStatus.deleted)
+            {
+                Response.StatusCode = 404;
+                ViewBag.ErrorMessage = "Priority with id = " + id + " is not found";
+                return View("NotFound");
+            }
+
             if (priority != null)
             {
                 //Department department1 = departmentRepo.GetDepartment(id);

@@ -10,6 +10,7 @@ namespace TicketMangment.Models
     {
         Ticket GetTicket(int Id);
         IEnumerable<Ticket> GetAllTickets();
+        IEnumerable<Ticket> GetAllTicketsInCompany(int companyId);
         Ticket Add(Ticket ticket);
         Ticket Update(Ticket ChangedTicket);
         Ticket Delete(int Id);

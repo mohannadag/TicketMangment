@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketMangment.Models;
 
 namespace TicketMangment.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210118200850_CreatingCompanyTable")]
+    partial class CreatingCompanyTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,8 +286,8 @@ namespace TicketMangment.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PhoneNumber")
+                        .HasColumnType("int");
 
                     b.Property<int?>("RecordStatus")
                         .HasColumnType("int");
@@ -604,7 +606,7 @@ namespace TicketMangment.Migrations
 
             modelBuilder.Entity("TicketMangment.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("TicketMangment.Models.Company", "Company")
+                    b.HasOne("TicketMangment.Models.Company", null)
                         .WithMany("Users")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -658,7 +660,7 @@ namespace TicketMangment.Migrations
                         .HasForeignKey("AssignedTo")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("TicketMangment.Models.Company", "Company")
+                    b.HasOne("TicketMangment.Models.Company", null)
                         .WithMany("Tickets")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict);
