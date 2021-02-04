@@ -83,10 +83,10 @@ namespace TicketMangment.Models
             return ChangedTicket;
         }
 
-        public SelectList GetListofDepartments()
+        public SelectList GetListofDepartments(int companyId)
         {
             var departmentList = new SelectList(context.Departments.Where(
-                d => d.RecordStatus == RecordStatus.notdeleted),
+                d => d.RecordStatus == RecordStatus.notdeleted && d.CompanyId == companyId),
                 "DepartmentId", "DepartmentName");
             return departmentList;
         }

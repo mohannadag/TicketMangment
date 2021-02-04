@@ -48,21 +48,4 @@ namespace TicketMangment.Models
 
         public int CompanyId { get; set; }
     }
-
-    //public enum TicketStatus
-    //{
-    //    Open = 1,
-    //    Closed = 2,
-    //    Solved = 3,
-    //    Asssigned = 4,
-    //    OnHold = 5,
-    //    ReOpened = 6,
-    //    InProgress = 7
-    //}
-
-    //public enum RecordStatus
-    //{
-    //    notdeleted = 0,
-    //    deleted = 1
-    //}
 }

@@ -41,7 +41,7 @@ namespace TicketMangment.Controllers
         public ActionResult Details(int id)
         {
             Department department = departmentRepo.GetDepartment(id);
-            if (department == null && department.RecordStatus == RecordStatus.deleted)
+            if (department == null || department.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Department with id = " + id + " is not found";
@@ -105,7 +105,7 @@ namespace TicketMangment.Controllers
         {
             Department department = departmentRepo.GetDepartment(id);
 
-            if (department == null && department.RecordStatus == RecordStatus.deleted)
+            if (department == null || department.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Department with id = " + id + " is not found";
@@ -156,7 +156,7 @@ namespace TicketMangment.Controllers
         public ActionResult Edit(int id, string newName)
         {
             Department department1 = departmentRepo.GetDepartment(id);
-            if (department1 != null && department1.RecordStatus != RecordStatus.deleted)
+            if (department1 != null || department1.RecordStatus != RecordStatus.deleted)
             {
                 //Department department1 = departmentRepo.GetDepartment(id);
                 //there is no need to put the next line becuse we don't need the user to chang id
@@ -185,7 +185,7 @@ namespace TicketMangment.Controllers
         public ActionResult Delete(int id)
         {
             Department department = departmentRepo.GetDepartment(id);
-            if(department == null)
+            if(department == null || department.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 return BadRequest();
@@ -246,7 +246,7 @@ namespace TicketMangment.Controllers
 
             var department = departmentRepo.GetDepartment(id);
 
-            if (department == null)
+            if (department == null || department.RecordStatus == RecordStatus.deleted)
             {
                 ViewBag.ErrorMessage = $"Department with Id = {id} cannot be found";
                 return View("NotFound");
@@ -386,7 +386,7 @@ namespace TicketMangment.Controllers
                 return View("NotFound");
             }
 
-            if (department == null)
+            if (department == null || department.RecordStatus == RecordStatus.deleted)
             {
                 ViewBag.ErrorMessage = $"Department with id = {depId} cannot be found";
                 return View("NotFound");

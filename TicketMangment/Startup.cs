@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TicketMangment.Models;
+using TicketMangment.SharedClasses;
 
 namespace TicketMangment
 {

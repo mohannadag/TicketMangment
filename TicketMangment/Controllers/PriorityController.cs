@@ -30,7 +30,7 @@ namespace TicketMangment.Controllers
         public ActionResult Details(int id)
         {
             Priority priority = priorityRepo.GetPriority(id);
-            if(priority == null && priority.RecordStatus == RecordStatus.deleted)
+            if(priority == null || priority.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Priority with id = " + id + " is not found";
@@ -112,7 +112,7 @@ namespace TicketMangment.Controllers
         {
             Priority priority = priorityRepo.GetPriority(id);
 
-            if (priority == null && priority.RecordStatus == RecordStatus.deleted)
+            if (priority == null || priority.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Priority with id = " + id + " is not found";
@@ -155,7 +155,7 @@ namespace TicketMangment.Controllers
         public ActionResult Delete(int id)
         {
             Priority priority = priorityRepo.GetPriority(id);
-            if (priority == null)
+            if (priority == null || priority.RecordStatus == RecordStatus.deleted)
             {
                 Response.StatusCode = 404;
                 return BadRequest();

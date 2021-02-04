@@ -28,55 +28,50 @@ namespace TicketMangment.Controllers
         private readonly IPriorityRepo priorityRepo;
         private readonly IWebHostEnvironment hostingEnvironment;
 
-        //private readonly RoleManager<ApplicationUser> roleManager;
-
         public TicketController(ITicketRepo ticketRepo, UserManager<ApplicationUser> userManager,
             IDepartmentRepo departmentRepo, IPriorityRepo priorityRepo, IWebHostEnvironment hostingEnvironment)
-            //RoleManager<ApplicationUser> roleManager)
         {
             this.ticketRepo = ticketRepo;
             this.userManager = userManager;
             this.departmentRepo = departmentRepo;
             this.priorityRepo = priorityRepo;
             this.hostingEnvironment = hostingEnvironment;
-            //this.roleManager = roleManager;
         }
+
         // GET: TicketController
         public async Task<ActionResult> Index([Optional] string getAllTickets)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await userManager.FindByIdAsync(userId);
+            int companyId = (await GetCurrentUser()).CompanyId;
 
             if (getAllTickets != null)
             {
                 if (getAllTickets.ToLower() == "all")
                 { 
-                    var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId);
+                    var model = ticketRepo.GetAllTicketsInCompany(companyId);
                     return View(model);
                 }
                 else
                 {
-                    var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId)
+                    var model = ticketRepo.GetAllTicketsInCompany(companyId)
                         .Where(t => t.RecordStatus == RecordStatus.notdeleted);
                     return View(model);
                 }
             }
             else
             {
-                var model = ticketRepo.GetAllTicketsInCompany(user.CompanyId).
+                var model = ticketRepo.GetAllTicketsInCompany(companyId).
                     Where(t => t.RecordStatus == RecordStatus.notdeleted);
                 return View(model);
             }
 
-    }
+        }
 
         // GET: TicketController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
             Ticket ticket = ticketRepo.GetTicket(id);
-            //ticket.Department = ticketRepo.GetDepartment(ticket.DepartmentId);
-
-            if(ticket == null && ticket.RecordStatus == RecordStatus.deleted)
+            
+            if(ticket == null || ticket.RecordStatus == RecordStatus.deleted || ((await GetCurrentUser()).CompanyId) != ticket.CompanyId)
             {
                 Response.StatusCode = 404;
                 ViewBag.ErrorMessage = "Ticket with id = " + id + " is not found";
@@ -88,26 +83,15 @@ namespace TicketMangment.Controllers
             // this viewbag to get the returned url
             ViewBag.returnUrl = Request.Headers["Referer"].ToString();
 
-            
             return View(ticket);
         }
 
         // GET: TicketController/Create
-        public /*async Task<IActionResult>*/ IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.departments = ticketRepo.GetListofDepartments();
+            ViewBag.departments = ticketRepo.GetListofDepartments((await GetCurrentUser()).CompanyId);
             ViewBag.priorites = ticketRepo.GetListofPriorites();
-            //var users = userManager.Users;
-            //var usersList = new List<ApplicationUser> { };
-            //foreach (var user in users)
-            //{
-            //    if(await userManager.IsInRoleAsync(user,"Admin"))
-            //    {
-            //        usersList.Add(user);
-            //    }
-            //}
-            //var selectListUsers = new SelectList(usersList, "Id", "UserName");
-            //ViewBag.Users = selectListUsers;
+            
             return View();
         }
 
@@ -121,7 +105,7 @@ namespace TicketMangment.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                    var user = await GetCurrentUser();
 
                     Ticket newticket = new Ticket
                     {
@@ -129,8 +113,8 @@ namespace TicketMangment.Controllers
                         RequestDetail = model.RequestDetail,
                         Location = model.Location,
                         CreateDate = DateTime.Now,
-                        CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                        UserId = User.FindFirstValue(ClaimTypes.NameIdentifier), // will give the user's userId
+                        CreatedBy = user.Id,
+                        UserId = user.Id,
                         DepartmentId = model.DepartmentId,
                         PriorityId = model.PriorityId,
                         AssignedTo = model.AssignedTo,
@@ -140,15 +124,8 @@ namespace TicketMangment.Controllers
                     };
                     Ticket ticket = ticketRepo.Add(newticket);
 
-                    TicketLogs ticketLogs = new TicketLogs
-                    {
-                        TicketId = ticket.TicketId,
-                        UserLog = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                        Message = "The ticket has been created",
-                        LogDate = DateTime.Now
-                    };
-                    ticketRepo.CreateTicketLog(ticketLogs);
-
+                    LoggerTicketProcessor.LogCreatedTicket(ticket.TicketId, user, ticketRepo);
+                    // TODO: create new class to handle taking notes when the note class complete (attachment,worktime,...)
                     if (model.NoteBody != null)
                     { 
                         Note note = new Note
@@ -165,7 +142,7 @@ namespace TicketMangment.Controllers
             catch (Exception ex)
             {
                 // TODO: log the exeption in the log file
-                return View();
+                return View(model);
             }
         }
 
@@ -173,6 +150,8 @@ namespace TicketMangment.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             Ticket ticket = ticketRepo.GetTicket(id);
+
+            var user = await GetCurrentUser();
 
             if (ticket == null && ticket.RecordStatus == RecordStatus.deleted)
             {
@@ -194,12 +173,12 @@ namespace TicketMangment.Controllers
                 TicketStatus = ticket.TicketStatus,
                 Notes = ticketRepo.GetAllNotes().Where(n => n.TicketId == id),
                 TicketLogs = ticketRepo.GetAllTicketLogs().Where(n => n.TicketId == id),
-                User = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                User = user,
                 Attachments = ticketRepo.GetAttachments().Where(t => t.TicketId == ticket.TicketId)
             };
 
             ViewBag.priorities = ticketRepo.GetListofPriorites();
-            ViewBag.departments = ticketRepo.GetListofDepartments();
+            ViewBag.departments = ticketRepo.GetListofDepartments(user.CompanyId);
             ViewBag.Users = userManager.Users.Where(u => u.DepartmentId == ticket.DepartmentId).ToList();
 
             return View(model);
@@ -212,8 +191,7 @@ namespace TicketMangment.Controllers
         {
             if(ModelState.IsValid)
             {
-                ApplicationUser user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
+                var user = await GetCurrentUser();
 
                 Ticket ticket = ticketRepo.GetTicket(model.TicketId);
                 ticket.Location = model.Location;
@@ -241,7 +219,7 @@ namespace TicketMangment.Controllers
                     {
                         Attachment attachment = new Attachment
                         {
-                            ServerFileName = ProccessUploadedFile(file, ticket.TicketId),
+                            ServerFileName = FilesProcessor.UploadedFile(file, ticket.TicketId, hostingEnvironment),
                             FileName = file.FileName,
                             TicketId = ticket.TicketId,
                             UserId = user.Id,
@@ -253,40 +231,19 @@ namespace TicketMangment.Controllers
 
                 ticketRepo.Update(ticket);
 
-                TicketLogs ticketLogs = new TicketLogs
-                {
-                    TicketId = model.TicketId,
-                    UserLog = user.Id,
-                    LogDate = DateTime.Now,
-                    Message = "The ticket has been modified"
-                };
-                ticketRepo.CreateTicketLog(ticketLogs);
+                LoggerTicketProcessor.LogEditedTicket(ticket.TicketId, user, ticketRepo);
 
                 if(ticket.TicketStatus == TicketStatus.Solved)
                 {
-                    SendEmail(user.UserName, user.Email, "Your ticket has been solved",
-                        "please see your ticket and confirm the fix by folow this link " + "https://localhost:44333/ticket/details/6");
+                    var createdByUser = await userManager.FindByIdAsync(ticket.CreatedBy);
+                    EmailProcessor.SendEmail(user.UserName, user.Email, "Your ticket has been solved",
+                        "please see your ticket and confirm the fix by folow this link " + "https://localhost:44333/ticket/details/" + ticket.TicketId);
                 }
-
-                // TODO: if the ticketstatus is solved we need to do something
-                // like send email or notefication to 
-                // the user whom created the ticket to approve 
-                // that the problem has solved and close the ticket
 
                 return RedirectToAction("index");
             }
             return View();
         }
-
-        // GET: TicketController/Delete/5
-        //public ActionResult Delete(int id)
-        //{
-        //    //ticketRepo.Delete(id);
-        //    //return RedirectToAction("index");
-
-        //    Ticket ticket = ticketRepo.GetTicket(id);
-        //    return View(ticket);
-        //}
 
         // POST: TicketController/Delete/5
         [HttpPost]
@@ -309,94 +266,18 @@ namespace TicketMangment.Controllers
             //return RedirectToAction("index");
         }
 
-        //public IActionResult MyTickets()
-        //{
-        //    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // will give the user's userId
-        //    var tickets = ticketRepo.GetTicketsByUser(userId);
-        //    //var createdTickets = ticketRepo.GetTicketsByUserId(userId);
-        //    if (tickets == null)
-        //    {
-        //        //Response.StatusCode = 404;
-        //        return View("There is non for you", userId);
-        //    }
-        //    return View(tickets);
-        //}
-
-        public async Task<IActionResult> MyTickets()
-        {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // will give the user's userId
-            var user = await userManager.FindByIdAsync(userId);
-            var tickets = ticketRepo.GetTicketsByUser(userId).Where(t => t.DepartmentId == user.DepartmentId &&
-            t.RecordStatus == RecordStatus.notdeleted); // Get all tickets the user assigned to
-            var createdTickets = ticketRepo.GetTicketsByUserId(userId); // Get all tickets created by the user
-            if (tickets == null)
-            {
-                //Response.StatusCode = 404;
-                return View("There is non for you", userId);
-            }
-
-            var model = new MyTicketsViewModel
-            {
-                CreatedTickets = createdTickets,
-                MyTickets = tickets
-            };
-            return View(model);
-        }
-
-        // I can use this method when i need to add notes in the edit method
-        // TODO: move this method to sepreate class and create new class to handle note model with database (not inside the SQLticket)
-        [HttpPost]
-        public ActionResult CreatNote(string model)
-        {
-            Note note = new Note
-            {
-                NoteBody = model,
-                CreatedDate = DateTime.Now,
-                CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            };
-            ticketRepo.CreateNote(note);
-            return View();
-        }
-
-        [HttpPost]
-        public ActionResult CreateNote(string model, int ticketId)
-        {
-            if(model != null)
-            { 
-                Note note = new Note
-                {
-                    NoteBody = model,
-                    TicketId = ticketId,
-                    CreatedDate = DateTime.Now,
-                    CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                };
-                ticketRepo.CreateNote(note);
-
-                TicketLogs ticketLogs = new TicketLogs
-                {
-                    TicketId = ticketId,
-                    UserLog = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    LogDate = DateTime.Now,
-                    Message = "New note created"
-                };
-                ticketRepo.CreateTicketLog(ticketLogs);
-                return Ok();
-            }
-            else
-            {
-                return BadRequest("Invalid data.");
-            }
-            //return View();
-        }
-
         [HttpGet]
-        public IActionResult ShowDeletedTickets()
+        public async Task<IActionResult> ShowDeletedTickets()
         {
+            var user = await GetCurrentUser();
+
             DeletedTicketsViewModel model = new DeletedTicketsViewModel
             {
-                Departments = departmentRepo.ShowAllDepartments().Where(t => t.RecordStatus == RecordStatus.deleted),
+                Departments = departmentRepo.ShowAllDepartments().Where(t => t.RecordStatus == RecordStatus.deleted &&
+                t.CompanyId == user.CompanyId),
                 Priorities = priorityRepo.ShowAllPriority().Where(t => t.RecordStatus == RecordStatus.deleted),
-                Tickets = ticketRepo.ShowAllTickets().Where(t => t.RecordStatus == RecordStatus.deleted)
+                Tickets = ticketRepo.ShowAllTickets().Where(t => t.RecordStatus == RecordStatus.deleted &&
+                t.CompanyId == user.CompanyId)
             };
             return View(model);
         }
@@ -433,27 +314,6 @@ namespace TicketMangment.Controllers
             return Ok();
         }
 
-        private string ProccessUploadedFile(IFormFile model , int id)
-        {
-            string uniqueFileName = null;
-            if (model != null)
-            {
-                string path = Path.Combine(hostingEnvironment.WebRootPath, "attachments", id.ToString());
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                //string uploadsFolder = Path.Combine(hostingEnvironment.WebRootPath, "attachments");
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.FileName;
-                string filePath = Path.Combine(path, uniqueFileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    model.CopyTo(fileStream);
-                }
-            }
-            return uniqueFileName;
-        }
-
         [HttpGet]
         public IActionResult DownloadFile(int id)
         {
@@ -463,43 +323,6 @@ namespace TicketMangment.Controllers
 
             // Return the file. A byte array can also be used instead of a stream
             return File(fs, "application/octet-stream", file.FileName);
-        }
-
-        private void SendEmail(string name, string email, string subject, string body)
-        {
-            // Prepare an email message to be sent
-
-            MimeMessage message = new MimeMessage();
-            MailboxAddress from = new MailboxAddress("mohannad", "ag.mohannad1@gmail.com");
-            message.From.Add(from);
-
-            MailboxAddress to = new MailboxAddress(name, email);
-            message.To.Add(to);
-
-            message.Subject = subject;
-
-            // Add email body and file attachments
-
-            BodyBuilder bodyBuilder = new BodyBuilder();
-            //bodyBuilder.HtmlBody = "<h1>Hello from the ticket mangment system</h1>";
-            bodyBuilder.TextBody = body;
-
-            // if we need to  add attachments with the email we uncomment the next line and specify the file we want
-            //bodyBuilder.Attachments.Add(hostingEnvironment.WebRootPath + "\\file.png");
-
-            message.Body = bodyBuilder.ToMessageBody();
-
-            // Connect and authenticate with the SMTP server
-
-            SmtpClient client = new SmtpClient();
-            client.Connect("smtp.gmail.com", 465, true);
-            client.Authenticate("ag.mohannad1@gmail.com", "1993Swat");
-
-            // Send email message
-
-            client.Send(message);
-            client.Disconnect(true);
-            client.Dispose();
         }
 
         public IActionResult DashBoard(DateTime? startDate, DateTime? endDate)
@@ -527,51 +350,17 @@ namespace TicketMangment.Controllers
 
         public ChartClass PopulationChart()
         {
-            List<string> liststring = new List<string>();
-            List<int> solvedTickets = new List<int>();
-            List<int> allTickets = new List<int>();
-            var tickets = ticketRepo.GetAllTickets();
-            DateTime date = DateTime.Now.AddYears(-1);
-            for(int i=1; i <=12; i++)
-            {
-                liststring.Add((date.AddMonths(i)).ToString("MMM"));
-                allTickets.Add((tickets.Where(t => t.CreateDate >= date.AddMonths(i-1) && t.CreateDate <= date.AddMonths(i))).Count());
-                solvedTickets.Add((tickets.Where(t => t.TicketStatus == TicketStatus.Solved &&
-                        t.CreateDate >= date.AddMonths(i-1) && t.CreateDate <= date.AddMonths(i))).Count());
-            }
-
-            ChartClass chart = new ChartClass
-            {
-                Labels = liststring.ToArray(),
-                AllTicketsValues = allTickets.ToArray(),
-                SolvedTicketsValues = solvedTickets.ToArray()
-            };
-            return chart;
-            
+            return ChartProcessor.PopulatChart(ticketRepo);
         }
 
         public Chart2Class FeedChart()
         {
-            List<string> departmentsNames = new List<string>();
-            List<int> ticketsNumber = new List<int>();
-
-            foreach(var dep in departmentRepo.GetAllDepartments())
-            {
-                departmentsNames.Add(dep.DepartmentName);
-                ticketsNumber.Add(ticketRepo.GetAllTickets().Where(t => t.DepartmentId == dep.DepartmentId).Count());
-            }
-            Chart2Class chart = new Chart2Class
-            {
-                Labels = departmentsNames.Take(4).ToArray(),
-                TicketsCount = ticketsNumber.Take(4).ToArray()
-            };
-
-            return chart;
+            return ChartProcessor.PopulatChart(departmentRepo, ticketRepo);
         }
 
         public async Task<ActionResult> Index1()
         {
-            var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await GetCurrentUser();
 
             var allTickets = ticketRepo.GetAllTicketsInCompany(user.CompanyId);
             List<ShowTicketsViewModel> departmentTickets = new List<ShowTicketsViewModel>();
@@ -623,6 +412,13 @@ namespace TicketMangment.Controllers
 
 
             return View(model);
+        }
+
+        private async Task<ApplicationUser> GetCurrentUser()
+        {
+            var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)); // will give the signedin user
+
+            return user;
         }
 
     }

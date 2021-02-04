@@ -14,7 +14,7 @@ namespace TicketMangment.Models
         Ticket Add(Ticket ticket);
         Ticket Update(Ticket ChangedTicket);
         Ticket Delete(int Id);
-        SelectList GetListofDepartments();
+        SelectList GetListofDepartments(int companyId);
         SelectList GetListofPriorites();
         SelectList GetListofUsers();
         IEnumerable<Ticket> GetTicketsByUser(string AssignedToId);

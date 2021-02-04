@@ -19,12 +19,12 @@ namespace TicketMangment.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
         private readonly IDepartmentRepo departmentRepo;
-        private readonly IHostingEnvironment hostingEnvironment;
+        private readonly IWebHostEnvironment hostingEnvironment;
         private readonly ICompanyRepo companyRepo;
         private readonly ILogger<AccountController> logger;
 
         public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-                                IDepartmentRepo departmentRepo, IHostingEnvironment hostingEnvironment, ICompanyRepo companyRepo,
+                                IDepartmentRepo departmentRepo, IWebHostEnvironment hostingEnvironment, ICompanyRepo companyRepo,
                                 ILogger<AccountController> logger)
         {
             this.userManager = userManager;
