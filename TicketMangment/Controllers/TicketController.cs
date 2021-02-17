@@ -16,6 +16,7 @@ using TicketMangment.ViewModel;
 using MailKit.Net.Smtp;
 using MimeKit;
 using TicketMangment.SharedClasses;
+using Microsoft.Extensions.Logging;
 
 namespace TicketMangment.Controllers
 {
@@ -27,19 +28,22 @@ namespace TicketMangment.Controllers
         private readonly IDepartmentRepo departmentRepo;
         private readonly IPriorityRepo priorityRepo;
         private readonly IWebHostEnvironment hostingEnvironment;
+        private readonly ILogger<TicketController> logger;
 
         public TicketController(ITicketRepo ticketRepo, UserManager<ApplicationUser> userManager,
-            IDepartmentRepo departmentRepo, IPriorityRepo priorityRepo, IWebHostEnvironment hostingEnvironment)
+            IDepartmentRepo departmentRepo, IPriorityRepo priorityRepo, IWebHostEnvironment hostingEnvironment,
+            ILogger<TicketController> logger)
         {
             this.ticketRepo = ticketRepo;
             this.userManager = userManager;
             this.departmentRepo = departmentRepo;
             this.priorityRepo = priorityRepo;
             this.hostingEnvironment = hostingEnvironment;
+            this.logger = logger;
         }
 
         // GET: TicketController
-        public async Task<ActionResult> Index([Optional] string getAllTickets)
+        public async Task<ActionResult> Index1([Optional] string getAllTickets)
         {
             int companyId = (await GetCurrentUser()).CompanyId;
 
@@ -141,8 +145,10 @@ namespace TicketMangment.Controllers
             }
             catch (Exception ex)
             {
-                // TODO: log the exeption in the log file
-                return View(model);
+                logger.LogError($"Exception occured: {ex}");
+                ViewBag.ErrorTitle = $"Error";
+                ViewBag.ErrorMessage = $"An unhandled exception has occurred while executing the request.";
+                return View("Error");
             }
         }
 
@@ -358,7 +364,7 @@ namespace TicketMangment.Controllers
             return ChartProcessor.PopulatChart(departmentRepo, ticketRepo);
         }
 
-        public async Task<ActionResult> Index1()
+        public async Task<ActionResult> Index()
         {
             var user = await GetCurrentUser();
 

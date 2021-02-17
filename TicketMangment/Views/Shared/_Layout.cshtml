@@ -89,7 +89,7 @@
                     </a>
                 </li>
 
-                @if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                @if (signInManager.IsSignedIn(User) && User.IsInRole("Owner"))
                 {
     <li class="sidebar-header">ADMINSTRATION</li>
 

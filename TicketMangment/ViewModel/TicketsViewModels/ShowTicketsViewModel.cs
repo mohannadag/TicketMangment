@@ -10,9 +10,7 @@ namespace TicketMangment.ViewModel
     public class ShowTicketsViewModel
     {
         public int TicketId { get; set; }
-        [Required]
         public string Subject { get; set; }
-        [Required]
         public string RequestDetail { get; set; }
         [Display(Name = "Ticket status")]
         public TicketStatus TicketStatus { get; set; }

@@ -73,19 +73,30 @@ namespace TicketMangment.Controllers
                     CompanyId = newcompany.Id
                 };
 
-                
-
                 var result = await userManager.CreateAsync(user, model.Password);
                 if(result.Succeeded)
                 {
-                    //if(signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                    if (signInManager.IsSignedIn(User))
-                    {
-                        return RedirectToAction("ListUsers", "Administration");
-                    }
+                    var roleResult = await userManager.AddToRoleAsync(user, "Owner");
 
-                    await signInManager.SignInAsync(user, false);
-                    return RedirectToAction("index", "home");
+                    if(roleResult.Succeeded)
+                    {
+                        //if(signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        if (signInManager.IsSignedIn(User))
+                        {
+                            return RedirectToAction("ListUsers", "Administration");
+                        }
+
+                        await signInManager.SignInAsync(user, false);
+                        return RedirectToAction("index", "home");
+                    }
+                    else
+                    {
+                        foreach (var error in roleResult.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                    }
+                    
                 }
                 foreach(var error in result.Errors)
                 {
@@ -93,6 +104,47 @@ namespace TicketMangment.Controllers
                 }
             }
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<string> Create(string[] model)
+        {
+            var currentUser = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (model != null)
+            {
+                string errors = null;
+
+                var user = new ApplicationUser
+                {
+                    UserName = model[0],
+                    Email = model[1],
+                    DepartmentId = Int32.Parse(model[2]),
+                    CompanyId = currentUser.CompanyId
+                };
+
+                var result = await userManager.CreateAsync(user, model[3]); //model[3] is the password
+                if (result.Succeeded)
+                {
+                    return "The user has been created";
+
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                    if(errors != null)
+                    { 
+                        errors.Insert(errors.Length, "\n" + error.Description);
+                    }
+                    else
+                    {
+                        errors = error.Description;
+                    }
+                }
+                return errors;
+            }
+
+            return "something went wrong please try again later";
         }
 
         [AllowAnonymous]

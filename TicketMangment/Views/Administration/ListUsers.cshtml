@@ -10,7 +10,87 @@
 
 @if (Model.Any())
 {
-    <a asp-controller="Account" asp-action="Register" class="btn btn-primary mb-3">Add new user</a>
+    @*<a asp-controller="Account" asp-action="Register" class="btn btn-primary mb-3">Add new user</a>*@
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#exampleModal">
+        Add new user
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content card card-authentication1 mx-auto my-5">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post">
+                    <div class="modal-body">
+                        <span class="text-danger" id="error"></span>
+                        <div class="form-group">
+                            <label class="sr-only">User Name</label>
+                            <div class="position-relative has-icon-right">
+                                <input type="text" id="username" class="form-control input-shadow" placeholder="Enter Username">
+                                <div class="form-control-position">
+                                    <i class="icon-user"></i>
+                                </div>
+                                <span class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="sr-only">Email</label>
+                            <div class="position-relative has-icon-right">
+                                <input type="email" id="email" class="form-control input-shadow" placeholder="Enter the user email">
+                                <div class="form-control-position">
+                                    <i class="icon-envelope-open"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="sr-only">Department</label>
+                            <div class="position-relative">
+                                <select class="form-control" id="department"
+                                        asp-items="@(new SelectList(ViewBag.departments,"DepartmentId","DepartmentName"))">
+                                    <option value="@null">Please select one</option>
+                                </select>
+                                @*<span asp-validation-for="@Model[i].AssignTo" class="text-danger"></span>*@
+                            </div>
+                        </div>
+
+                        @*<div class="form-group">
+            <label class="sr-only">Department</label>
+            <div class="position-relative has-icon-right">
+                <input type="number" id="departmanet" class="form-control input-shadow" placeholder="Enter department id">
+                <div class="form-control-position">
+                    <i class="icon-organization"></i>
+                </div>
+            </div>
+        </div>*@
+                        <div class="form-group">
+                            <label class="sr-only">Password</label>
+                            <div class="position-relative has-icon-right">
+                                <input type="password" id="password" class="form-control input-shadow" placeholder="Enter password">
+                                <div class="form-control-position">
+                                    <i class="icon-lock"></i>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="adduser">Add user</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     // this section for making the users appear in table
 
@@ -122,6 +202,49 @@ else
                 return Xsrf.GetAndStoreTokens(Context).RequestToken;
             }
         }
+
+        $(document).ready(function () {
+
+            $('#adduser').click(function () {
+                var username = $('#username').val();
+                var email = $('#email').val();
+                var department = $('#department').val();
+                var password = $('#password').val();
+
+                if ((username != null && username != "") && (email != null && email != "") &&
+                    (department != null && department != "") && (password != null && password != ""))
+                {
+                    var model = [username, email, department, password];
+                    //console.log(model);
+
+                    $.ajax({
+                            url: "/account/create",
+                            method: "POST",
+                            headers: {
+                                "RequestVerificationToken": "@GetAntiXsrfRequestToken()"
+                            },
+                            data: {
+                                model
+                            }
+                        }).done(function (response) {
+                            //var message = JSON.parse(response);
+                            Swal.fire(
+                                'Info!',
+                                response,
+                                'info'
+                            ).then(function () {
+                                location.reload();
+                            })
+                        })
+                }
+                else {
+                    $('#error').html("You must fill all the fields");
+                    //console.log($('#error').val());
+                }
+            })
+
+        });
+
     </script>
     <script src="~/js/UsersViewScript.js"></script>
 

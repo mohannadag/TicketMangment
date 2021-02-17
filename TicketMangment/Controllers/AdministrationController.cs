@@ -16,7 +16,7 @@ namespace TicketMangment.Controllers
 {
     // we can change the authorize to make it by policy insted of role
     // [Authorize(Policy = "AdminRolePolicy")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Owner")]
     [Authorize(Policy = "AccessControlPanelPolicy")]
     public class AdministrationController : Controller
     {
@@ -248,6 +248,8 @@ namespace TicketMangment.Controllers
             var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var users = userManager.Users.Include(u => u.Department).Where(u => u.CompanyId == user.CompanyId);
+
+            ViewBag.departments = departmentRepo.GetAllDepartmentsInCompany(user.CompanyId).ToList();
             return View(users);
         }
 

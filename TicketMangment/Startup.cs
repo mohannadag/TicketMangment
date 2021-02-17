@@ -43,8 +43,10 @@ namespace TicketMangment
             //    loggingBuilder.AddDebug();
             //});
 
-            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
-            
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => { 
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ "; })
+                .AddEntityFrameworkStores<AppDbContext>();
+
             services.AddControllersWithViews(config => {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
