@@ -68,7 +68,8 @@ namespace TicketMangment.Controllers
 
                 var user = new ApplicationUser
                 {
-                    UserName = model.Name,
+                    DisplayName = model.Name,
+                    UserName = model.Email,
                     Email = model.Email,
                     CompanyId = newcompany.Id
                 };
@@ -117,7 +118,8 @@ namespace TicketMangment.Controllers
 
                 var user = new ApplicationUser
                 {
-                    UserName = model[0],
+                    DisplayName = model[0],
+                    UserName = model[1],
                     Email = model[1],
                     DepartmentId = Int32.Parse(model[2]),
                     CompanyId = currentUser.CompanyId
@@ -218,7 +220,7 @@ namespace TicketMangment.Controllers
             UserViewModel model = new UserViewModel
             {
                 ID = user.Id,
-                Name = user.UserName,
+                Name = user.DisplayName,
                 Email = user.Email,
                 ExistingPhotoPath = user.PhotoPath
             };
@@ -243,7 +245,7 @@ namespace TicketMangment.Controllers
                     return View("NotFound");
                 }
 
-                user.UserName = model.Name;
+                user.DisplayName = model.Name;
                 //user.Email = model.Email;
                 //if (user.PasswordHash == model.OldPassword)
                 //{

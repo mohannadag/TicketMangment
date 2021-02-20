@@ -116,10 +116,12 @@
 
 
                         <tr>
-                            <td>@user.UserName</td>
-                            <td>@user.Department.DepartmentName</td>
-                            <td>
-                                <a class="btn btn-primary btn-sm m-1" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+                            <td>@user.DisplayName</td>
+                            <td>@(user.Department == null ? "" : user.Department.DepartmentName)</td>
+
+                           <td>
+
+                               <a class="btn btn-primary btn-sm m-1" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
                                 <form method="post" id="deletForm"
                                       asp-controller="administration" asp-action="DeleteUser" asp-route-id="@user.Id">
                                     <a class="btn btn-danger btn-sm m-1" id="delete" onclick="deleteUser(this)" userId="@user.Id">Delete</a>

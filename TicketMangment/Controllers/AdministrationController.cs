@@ -274,7 +274,7 @@ namespace TicketMangment.Controllers
             var model = new EditUserViewModel
             {
                 Id = user.Id,
-                Name = user.UserName,
+                Name = user.DisplayName,
                 Email = user.Email,
                 DepartmentId = user.DepartmentId,
                 Roles = userRoles,
@@ -298,7 +298,7 @@ namespace TicketMangment.Controllers
             }
             else
             {
-                user.UserName = model.Name;
+                user.DisplayName = model.Name;
                 user.Email = model.Email;
                 user.DepartmentId = model.DepartmentId;
 
@@ -505,7 +505,7 @@ namespace TicketMangment.Controllers
             {
                 if(await userManager.IsInRoleAsync(user, role.Name))
                 {
-                    model.Users.Add(user.UserName);
+                    model.Users.Add(user.DisplayName);
                 }
             }
 
@@ -566,7 +566,7 @@ namespace TicketMangment.Controllers
                 var userRoleViewModel = new UserRoleViewModel
                 {
                     UserId = user.Id,
-                    UserName = user.UserName
+                    UserName = user.DisplayName
                 };
                 if(await userManager.IsInRoleAsync(user, role.Name))
                 {

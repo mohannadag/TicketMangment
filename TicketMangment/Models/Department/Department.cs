@@ -25,7 +25,7 @@ namespace TicketMangment.Models
         public string CreatedBy { get; set; }
         public string ModifiedBy { get; set; }
         public RecordStatus? RecordStatus { get; set; }
-        //public IEnumerable<ApplicationUser> Users { get; set; }
+        public IEnumerable<ApplicationUser> Users { get; set; }
         [NotMapped]
         public List<string> ListOfUsersName { get; set; }
         public string DepAdmin { get; set; }

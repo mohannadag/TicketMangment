@@ -296,13 +296,13 @@ namespace TicketMangment.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUserToDep(List<AddUserToDepViewModel> model, int departmentId)
         {
-            //var department = departmentRepo.GetDepartment(departmentId);
+            var department = departmentRepo.GetDepartment(departmentId);
 
-            //if (departmentRepo.GetDepartment(departmentId) == null)
-            //{
-            //    ViewBag.ErrorMessage = $"Department with id = {departmentId} cannot be found";
-            //    return View("NotFound");
-            //}
+            if (departmentRepo.GetDepartment(departmentId) == null)
+            {
+                ViewBag.ErrorMessage = $"Department with id = {departmentId} cannot be found";
+                return View("NotFound");
+            }
 
             IdentityResult result = null;
 
@@ -353,7 +353,11 @@ namespace TicketMangment.Controllers
                     continue;
                 }
 
-                
+                if (!department.Users.Any())
+                {
+                    department.DepAdmin = null;
+                    departmentRepo.Update(department);
+                }
 
                 if (result.Succeeded)
                 {
@@ -368,6 +372,12 @@ namespace TicketMangment.Controllers
                 }
 
                 
+            }
+
+            if (!department.Users.Any())
+            {
+                department.DepAdmin = null;
+                departmentRepo.Update(department);
             }
 
             return RedirectToAction("Edit", new { Id = departmentId });
