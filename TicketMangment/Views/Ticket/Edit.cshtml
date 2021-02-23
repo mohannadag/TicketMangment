@@ -109,7 +109,7 @@
             <label asp-for="AssignedTo" class="col-sm-2 col-form-label"></label>
             <div class="col-sm-10">
                 <select class="form-control" asp-for="AssignedTo"
-                        asp-items="@(new SelectList(ViewBag.Users,"Id","UserName"))">
+                        asp-items="@(new SelectList(ViewBag.Users,"Id","DisplayName"))">
                     <option value="@null">Please select one</option>
                 </select>
                 <span asp-validation-for="AssignedTo" class="text-danger"></span>
@@ -153,7 +153,7 @@
                         <div class="col-md-12">
                             <h5 class="mt-2 mb-3"><span class="fa fa-clock-o ion-clock float-right"></span> Recent Activity</h5>
                             <div class="table-responsive">
-                                <table class="table table-hover table-striped">
+                                <table id="logsTable" class="table table-hover table-striped">
                                     <tbody>
                                         @if (Model.TicketLogs.Any())
                                         {
@@ -162,7 +162,6 @@
                                                 <tr class="hnslogs">
                                                     <td>
                                                         <span class="float-right font-weight-bold">@log.LogDate</span>
-                                                        <strong>"@await userManger.FindByIdAsync(log.UserLog)"</strong>
                                                         @log.Message
                                                     </td>
                                                 </tr>
@@ -180,8 +179,8 @@
 
                                     </tbody>
                                 </table>
-                                <a id="showMorelogs" href="javascript:void();">Show more...</a>
-                                <a id="showLesslogs" href="javascript:void();">Show less...</a>
+                                <a id="showMorelogs" style="cursor:pointer">Load more</a>
+                                <a id="showLesslogs" style="cursor:pointer">Show less</a>
                             </div>
                         </div>
 
@@ -211,10 +210,6 @@
                                 <tbody>
                                     @if (Model.Notes.Any())
                                     {
-                                        if (Model.Notes.Count() >= 4)
-                                        {
-
-                                        }
                                         @foreach (var note in Model.Notes.Reverse())
                                         {
                                             <tr class="hns">
@@ -235,7 +230,8 @@
                                     }
                                 </tbody>
                             </table>
-                            <a id="showMore" href="javascript:void();"></a>
+                            <a id="showMore" href="javascript:void();">Load more</a>
+                            <a id="showLess" href="javascript:void();">Show less</a>
                         </div>
                     </div>
                     <div class="tab-pane" id="attachments">
@@ -244,7 +240,7 @@
 
 
                         <div class="table-responsive">
-                            <table id="notesTable" class="table table-hover table-striped">
+                            <table class="table table-hover table-striped">
                                 <tbody>
                                     @if (Model.Attachments.Any())
                                     {
@@ -300,95 +296,125 @@
         }
 
         $(document).ready(function () {
-            size_li = $("#myList li").size();
+            // show more or less for the log table
+            size_li = $("#logsTable tr").length;
             x = 3;
-            $('#myList li:lt(' + x + ')').show();
-            $('#loadMore').click(function () {
+            $('#logsTable tr').hide();
+            $('#showLesslogs').hide();
+            if (size_li <= x) { $('#showMorelogs').hide(); }
+            $('#logsTable tr:lt(' + x + ')').show();
+            $('#showMorelogs').click(function () {
                 x = (x + 5 <= size_li) ? x + 5 : size_li;
-                $('#myList li:lt(' + x + ')').show();
-                $('#showLess').show();
+                $('#logsTable tr:lt(' + x + ')').show();
+                $('#showLesslogs').show();
                 if (x == size_li) {
-                    $('#loadMore').hide();
+                    $('#showMorelogs').hide();
+                }
+            });
+            $('#showLesslogs').click(function () {
+                x = (x - 5 <= 3) ? 3 : x - 5;
+                $('#logsTable tr').not(':lt(' + x + ')').hide();
+                $('#showMorelogs').show();
+                $('#showLesslogs').show();
+                if (x == 3) {
+                    $('#showLesslogs').hide();
+                }
+            });
+
+            //show more or less for the note table
+            size_tr = $("#notesTable tr").length;
+            y = 3;
+            $('#notesTable tr').hide();
+            $('#showLess').hide();
+            if (size_tr <= y) { $('#showMore').hide(); }
+            $('#notesTable tr:lt(' + y + ')').show();
+            $('#showMore').click(function () {
+                y = (y + 5 <= size_tr) ? y + 5 : size_tr;
+                $('#notesTable tr:lt(' + y + ')').show();
+                $('#showLess').show();
+                if (y == size_tr) {
+                    $('#showMore').hide();
                 }
             });
             $('#showLess').click(function () {
-                x = (x - 5 < 0) ? 3 : x - 5;
-                $('#myList li').not(':lt(' + x + ')').hide();
-                $('#loadMore').show();
+                y = (y - 5 <= 3) ? 3 : y - 5;
+                $('#notesTable tr').not(':lt(' + y + ')').hide();
+                $('#showMore').show();
                 $('#showLess').show();
-                if (x == 3) {
+                if (y == 3) {
                     $('#showLess').hide();
                 }
             });
+
         });
 
-        $(document).ready(function () {
-            var i = 5;
-            var showtr = $('.hns');
-            var showtrlogs = $('.hnslogs');
-            $('#showMorelogs').hide();
-            $('#showLesslogs').hide();
-            //console.log(showtr.length);
-            if (showtr.length > 5) {
-                $('.hns').hide();
-                $('.hns:nth-child(-n+5)').show();
-                $('#showMore').html("<b>Show more...</b>");
-            }
-            if (showtrlogs.length > 4) {
-                $('.hnslogs').hide();
-                $('.hnslogs:nth-child(-n+5)').show();
-                $('#showMorelogs').show();
-            }
+        //$(document).ready(function () {
+        //    var i = 5;
+        //    var showtr = $('.hns');
+        //    var showtrlogs = $('.hnslogs');
+        //    $('#showMorelogs').hide();
+        //    $('#showLesslogs').hide();
+        //    //console.log(showtr.length);
+        //    if (showtr.length > 5) {
+        //        $('.hns').hide();
+        //        $('.hns:nth-child(-n+5)').show();
+        //        $('#showMore').html("<b>Show more...</b>");
+        //    }
+        //    if (showtrlogs.length > 4) {
+        //        $('.hnslogs').hide();
+        //        $('.hnslogs:nth-child(-n+5)').show();
+        //        $('#showMorelogs').show();
+        //    }
 
 
-            // this click event for show more items in notes
-            $('#showMore').click(function () {
-                if (showtr.length > 5) {
-                    i += 5;
-                    //console.log(i);
-                    if (showtr.length >  i) {
-                        $('.hns:nth-child(-n+'+ i + ')').show();
-                    }
-                    else if (showtr.length <= i  && showtr.length >= i - 1) {
-                        $('.hns').show();
-                        $('#showMore').html('<b>Show less...</b>');
-                    }
-                    else {
-                        $('.hns').hide();
-                        $('.hns:nth-child(-n+5)').show();
-                        $('#showMore').html('<b>Show more...</b>');
-                        i = 5;
-                    }
-                }
+        //    // this click event for show more items in notes
+        //    $('#showMore').click(function () {
+        //        if (showtr.length > 5) {
+        //            i += 5;
+        //            //console.log(i);
+        //            if (showtr.length >  i) {
+        //                $('.hns:nth-child(-n+'+ i + ')').show();
+        //            }
+        //            else if (showtr.length <= i  && showtr.length >= i - 1) {
+        //                $('.hns').show();
+        //                $('#showMore').html('<b>Show less...</b>');
+        //            }
+        //            else {
+        //                $('.hns').hide();
+        //                $('.hns:nth-child(-n+5)').show();
+        //                $('#showMore').html('<b>Show more...</b>');
+        //                i = 5;
+        //            }
+        //        }
 
-            });
+        //    });
 
 
-            // this click event for show more items in logs
-            $('#showMorelogs').click(function () {
-                if (showtrlogs.length > 5) {
-                    i += 5;
-                    console.log(i);
-                    console.log(showtrlogs.length);
-                    if (showtrlogs.length > i) {
-                        $('.hnslogs:nth-child(-n+' + i + ')').show();
-                    }
-                    else if (showtrlogs.length <= i) {
-                        $('.hnslogs').show();
-                        $('#showMorelogs').hide();
-                        $('#showLesslogs').show();
-                        i = 5;
-                    }
-                }
+        //    // this click event for show more items in logs
+        //    $('#showMorelogs').click(function () {
+        //        if (showtrlogs.length > 5) {
+        //            i += 5;
+        //            console.log(i);
+        //            console.log(showtrlogs.length);
+        //            if (showtrlogs.length > i) {
+        //                $('.hnslogs:nth-child(-n+' + i + ')').show();
+        //            }
+        //            else if (showtrlogs.length <= i) {
+        //                $('.hnslogs').show();
+        //                $('#showMorelogs').hide();
+        //                $('#showLesslogs').show();
+        //                i = 5;
+        //            }
+        //        }
 
-            });
+        //    });
 
-            $('#showLesslogs').click(function () {
-                $('.hnslogs').hide();
-                $('.hnslogs:nth-child(-n+5)').show();
-                $('#showLesslogs').hide();
-                $('#showMorelogs').show();
-            })
+        //    $('#showLesslogs').click(function () {
+        //        $('.hnslogs').hide();
+        //        $('.hnslogs:nth-child(-n+5)').show();
+        //        $('#showLesslogs').hide();
+        //        $('#showMorelogs').show();
+        //    })
 
     </script>
 }

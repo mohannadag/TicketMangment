@@ -178,7 +178,7 @@ namespace TicketMangment.Controllers
                 AssignedTo = ticket.AssignedTo,
                 TicketStatus = ticket.TicketStatus,
                 Notes = ticketRepo.GetAllNotes().Where(n => n.TicketId == id),
-                TicketLogs = ticketRepo.GetAllTicketLogs().Where(n => n.TicketId == id),
+                TicketLogs = ticketRepo.GetAllTicketLogs().Where(n => n.TicketId == id).Reverse(),
                 User = user,
                 Attachments = ticketRepo.GetAttachments().Where(t => t.TicketId == ticket.TicketId)
             };
@@ -331,8 +331,9 @@ namespace TicketMangment.Controllers
             return File(fs, "application/octet-stream", file.FileName);
         }
 
-        public IActionResult DashBoard(DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> DashBoard(DateTime? startDate, DateTime? endDate)
         {
+            var user = await GetCurrentUser();
             if(startDate == null)
             {
                 startDate = DateTime.MinValue;
@@ -341,27 +342,30 @@ namespace TicketMangment.Controllers
             {
                 endDate = DateTime.Now;
             }
-            var tickets = ticketRepo.GetAllTickets().Where(t => startDate <= t.CreateDate && t.CreateDate <= endDate);
+            var tickets = ticketRepo.GetAllTicketsInCompany(user.CompanyId).Where(t => startDate <= t.CreateDate && t.CreateDate <= endDate);
             var model = new DashBoardViewModel
             {
                 StartDate = (DateTime)startDate,
                 EndDate = (DateTime)endDate,
-                PreviousMonthTickets = ticketRepo.GetAllTickets().Where(t => DateTime.Now.AddMonths(-1) >= t.CreateDate),
+                PreviousMonthTickets = ticketRepo.GetAllTicketsInCompany(user.CompanyId).Where(t => DateTime.Now.AddMonths(-1) >= t.CreateDate),
                 Tickets = tickets,
-                Departments = departmentRepo.GetAllDepartments()
+                Departments = departmentRepo.GetAllDepartmentsInCompany(user.CompanyId)
             };
             //ViewBag.PreviousMonthTickets = ticketRepo.GetAllTickets().Where(t => DateTime.Now.AddMonths(-1) >= t.CreateDate).Count();
             return View(model);
         }
 
-        public ChartClass PopulationChart()
+        public async Task<ChartClass> PopulationChart()
         {
-            return ChartProcessor.PopulatChart(ticketRepo);
+            var user = await GetCurrentUser();
+            return ChartProcessor.PopulatChart(ticketRepo, user.CompanyId);
         }
 
-        public Chart2Class FeedChart()
+        public async Task<Chart2Class> FeedChart()
         {
-            return ChartProcessor.PopulatChart(departmentRepo, ticketRepo);
+            var user = await GetCurrentUser();
+
+            return ChartProcessor.PopulatChart(departmentRepo, ticketRepo, user.CompanyId);
         }
 
         public async Task<ActionResult> Index()
@@ -425,6 +429,38 @@ namespace TicketMangment.Controllers
             var user = await userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)); // will give the signedin user
 
             return user;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateNote(string model, int ticketId)
+        {
+            var user = await GetCurrentUser();
+            if (model != null)
+            {
+                Note note = new Note
+                {
+                    NoteBody = model,
+                    TicketId = ticketId,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = user.Id
+                };
+                ticketRepo.CreateNote(note);
+
+                TicketLogs ticketLogs = new TicketLogs
+                {
+                    TicketId = ticketId,
+                    UserLog = user.Id,
+                    LogDate = DateTime.Now,
+                    Message = $"New note created by {user.DisplayName}"
+                };
+                ticketRepo.CreateTicketLog(ticketLogs);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Invalid data.");
+            }
+            //return View();
         }
 
     }

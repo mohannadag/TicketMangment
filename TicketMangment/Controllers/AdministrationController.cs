@@ -183,19 +183,19 @@ namespace TicketMangment.Controllers
                 return View(model);
             }
 
-            foreach(var claim in model.Claims)
-            {
-                if (claim.IsSelected)
-                {
+            //foreach(var claim in model.Claims)
+            //{
+            //    if (claim.IsSelected)
+            //    {
                     //result = await userManager.AddClaimsAsync(user, model.Claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)));
                     result = await userManager.AddClaimsAsync(user, model.Claims.Where(c => c.IsSelected == true).Select(c => new Claim(c.ClaimType, c.ClaimValue)));
                     if (!result.Succeeded)
                     {
-                        ModelState.AddModelError("", $"Cannot add {claim.ClaimType} claim to this role");
+                        ModelState.AddModelError("", $"{result.Errors}");
                         return View(model);
                     }
-                }
-            }
+            //    }
+            //}
 
             //result = await userManager.AddClaimsAsync(user, model.Claims.Select(c => new Claim(c.ClaimType, c.IsSelected ? "true" : "false")));
 

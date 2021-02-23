@@ -8,12 +8,12 @@ namespace TicketMangment.SharedClasses
 {
     public static class ChartProcessor
     {
-        public static ChartClass PopulatChart(ITicketRepo ticketRepo)
+        public static ChartClass PopulatChart(ITicketRepo ticketRepo, int companyId)
         {
             List<string> liststring = new List<string>();
             List<int> solvedTickets = new List<int>();
             List<int> allTickets = new List<int>();
-            var tickets = ticketRepo.GetAllTickets();
+            var tickets = ticketRepo.GetAllTicketsInCompany(companyId);
             DateTime date = DateTime.Now.AddYears(-1);
             for (int i = 1; i <= 12; i++)
             {
@@ -32,15 +32,15 @@ namespace TicketMangment.SharedClasses
             return chart;
         }
 
-        public static Chart2Class PopulatChart(IDepartmentRepo departmentRepo, ITicketRepo ticketRepo)
+        public static Chart2Class PopulatChart(IDepartmentRepo departmentRepo, ITicketRepo ticketRepo, int companyId)
         {
             List<string> departmentsNames = new List<string>();
             List<int> ticketsNumber = new List<int>();
 
-            foreach (var dep in departmentRepo.GetAllDepartments())
+            foreach (var dep in departmentRepo.GetAllDepartmentsInCompany(companyId))
             {
                 departmentsNames.Add(dep.DepartmentName);
-                ticketsNumber.Add(ticketRepo.GetAllTickets().Where(t => t.DepartmentId == dep.DepartmentId).Count());
+                ticketsNumber.Add(ticketRepo.GetAllTicketsInCompany(companyId).Where(t => t.DepartmentId == dep.DepartmentId).Count());
             }
             Chart2Class chart = new Chart2Class
             {

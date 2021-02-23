@@ -58,7 +58,7 @@
                                     <label asp-for="@Model[i].AssignTo" class="col-form-label small"></label>
                                     <div>
                                         <select class="form-control small ml-1" asp-for="@Model[i].AssignTo"
-                                                asp-items="@(new SelectList(ViewBag.Users,"Id","UserName"))">
+                                                asp-items="@(new SelectList(ViewBag.Users,"Id","DisplayName"))">
                                             <option value="@null">Please select one</option>
                                         </select>
                                         <span asp-validation-for="@Model[i].AssignTo" class="text-danger"></span>

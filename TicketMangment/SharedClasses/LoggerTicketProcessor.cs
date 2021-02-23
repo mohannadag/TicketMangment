@@ -21,7 +21,7 @@ namespace TicketMangment.SharedClasses
             {
                 TicketId = ticketId,
                 UserLog = user.Id,
-                Message = $"The ticket has been created by {user.UserName}",
+                Message = $"The ticket has been created by {user.DisplayName}",
                 LogDate = DateTime.UtcNow
             };
             ticketRepo.CreateTicketLog(ticketLogs);
@@ -33,7 +33,7 @@ namespace TicketMangment.SharedClasses
             {
                 TicketId = ticketId,
                 UserLog = user.Id,
-                Message = $"The ticket has been modified by {user.UserName}",
+                Message = $"The ticket has been modified by {user.DisplayName}",
                 LogDate = DateTime.UtcNow
             };
             ticketRepo.CreateTicketLog(ticketLogs);

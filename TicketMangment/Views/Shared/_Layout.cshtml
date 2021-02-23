@@ -144,10 +144,11 @@
                     @if (signInManager.IsSignedIn(User))
                     {
                         var user = await signInManager.UserManager.FindByNameAsync(User.Identity.Name);
+                        var photoPath = "/images/" + (user.PhotoPath ?? "noimage.jpg");
         <li class="nav-item">
             <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" data-toggle="dropdown" href="#">
                 <span class="user-profile">
-                    <img src="https://via.placeholder.com/110x110" class="img-circle" alt="user avatar">
+                    <img src="@photoPath" class="img-circle" alt="user avatar">
                     @* src="@user.PhotoPath" *@
                 </span>
             </a>
@@ -156,7 +157,7 @@
                     <a asp-action="editProfile" asp-controller="account">
                         <div class="media">
                             <div class="avatar">
-                                <img class="align-self-start mr-3" src="https://via.placeholder.com/110x110"
+                                <img class="align-self-start mr-3" src="@photoPath"
                                      alt="user avatar">
                             </div>
                             <div class="media-body">

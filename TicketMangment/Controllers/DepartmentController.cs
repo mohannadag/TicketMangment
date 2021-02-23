@@ -128,7 +128,7 @@ namespace TicketMangment.Controllers
             {
                 if (user.DepartmentId == id)
                 {
-                    department1.ListOfUsersName.Add(user.UserName);
+                    department1.ListOfUsersName.Add(user.DisplayName);
                 }
             }
 
@@ -262,7 +262,7 @@ namespace TicketMangment.Controllers
                 var userRoleViewModel = new UserRoleViewModel
                 {
                     UserId = user.Id,
-                    UserName = user.UserName
+                    UserName = user.DisplayName
                     //InDepRole = user.InDepRole
                 };
                 if (user.DepartmentId == department.DepartmentId)
