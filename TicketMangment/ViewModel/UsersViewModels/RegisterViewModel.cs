@@ -33,7 +33,6 @@ namespace TicketMangment.ViewModel
 
         [Required]
         [EmailAddress]
-        [Remote(action: "IsEmailInUse", controller: "Account")]
         [Display (Name ="Company Email")]
         public string CompanyEmail { get; set; }
 

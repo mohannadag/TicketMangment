@@ -149,6 +149,12 @@ namespace TicketMangment.Controllers
             return "something went wrong please try again later";
         }
 
+        public IActionResult Create()
+        {
+            CreateUserViewModel model = new CreateUserViewModel();
+            return PartialView("_UserModelPartial", model);
+        }
+
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Login()

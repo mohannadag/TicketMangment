@@ -470,10 +470,24 @@ namespace TicketMangment.Controllers
 
         [HttpGet]
         [Authorize(Policy = "ListRolesPolicy")]
-        public IActionResult ListRoles()
+        public async Task<IActionResult> ListRoles()
         {
             var roles = roleManager.Roles;
-            return View(roles);
+            List<EditRoleViewModel> listRoles = new List<EditRoleViewModel>();
+            foreach (var role in roles)
+            {
+                var roleClaims = await roleManager.GetClaimsAsync(role);
+
+                var item = new EditRoleViewModel
+                {
+                    Id = role.Id,
+                    RoleName = role.Name,
+                    Claims = roleClaims
+                };
+
+                listRoles.Add(item);
+            }
+            return View(listRoles);
         }
 
         [HttpGet]

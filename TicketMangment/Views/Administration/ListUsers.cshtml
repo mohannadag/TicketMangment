@@ -27,13 +27,13 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form method="post">
+                <form method="post" name="create-new-user">
                     <div class="modal-body">
                         <span class="text-danger" id="error"></span>
                         <div class="form-group">
                             <label class="sr-only">User Name</label>
                             <div class="position-relative has-icon-right">
-                                <input type="text" id="username" class="form-control input-shadow" placeholder="Enter Username">
+                                <input type="text" id="username" name="username" class="form-control input-shadow" placeholder="Enter Username">
                                 <div class="form-control-position">
                                     <i class="icon-user"></i>
                                 </div>
@@ -43,7 +43,7 @@
                         <div class="form-group">
                             <label class="sr-only">Email</label>
                             <div class="position-relative has-icon-right">
-                                <input type="email" id="email" class="form-control input-shadow" placeholder="Enter the user email">
+                                <input type="email" id="email" name="email" class="form-control input-shadow" placeholder="Enter the user email">
                                 <div class="form-control-position">
                                     <i class="icon-envelope-open"></i>
                                 </div>
@@ -53,7 +53,7 @@
                         <div class="form-group">
                             <label class="sr-only">Department</label>
                             <div class="position-relative">
-                                <select class="form-control" id="department"
+                                <select class="form-control" id="department" name="department"
                                         asp-items="@(new SelectList(ViewBag.departments,"DepartmentId","DepartmentName"))">
                                     <option value="@null">Please select one</option>
                                 </select>
@@ -73,7 +73,7 @@
                         <div class="form-group">
                             <label class="sr-only">Password</label>
                             <div class="position-relative has-icon-right">
-                                <input type="password" id="password" class="form-control input-shadow" placeholder="Enter password">
+                                <input type="password" id="password" name="password" class="form-control input-shadow" placeholder="Enter password">
                                 <div class="form-control-position">
                                     <i class="icon-lock"></i>
                                 </div>
@@ -197,6 +197,8 @@ else
 }
 
 @section Scripts{
+    <script src="~/js/create-user-form-validation.js"></script>
+
     <script type="text/javascript">
         @functions{
             public string GetAntiXsrfRequestToken()
@@ -213,9 +215,9 @@ else
                 var department = $('#department').val();
                 var password = $('#password').val();
 
-                if ((username != null && username != "") && (email != null && email != "") &&
-                    (department != null && department != "") && (password != null && password != ""))
-                {
+                //if ((username != null && username != "") && (email != null && email != "") &&
+                //    (department != null && department != "") && (password != null && password != ""))
+                //{
                     var model = [username, email, department, password];
                     //console.log(model);
 
@@ -238,16 +240,15 @@ else
                                 location.reload();
                             })
                         })
-                }
-                else {
-                    $('#error').html("You must fill all the fields");
-                    //console.log($('#error').val());
-                }
+                //}
+                //else {
+                //    $('#error').html("You must fill all the fields");
+                //    //console.log($('#error').val());
+                //}
             })
 
         });
 
     </script>
     <script src="~/js/UsersViewScript.js"></script>
-
 }

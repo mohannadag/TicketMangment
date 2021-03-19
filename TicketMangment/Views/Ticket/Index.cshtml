@@ -208,8 +208,8 @@
                                             <td>@ticket.TicketStatus</td>
                                             <td>
 
-                                                <a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
-                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">View</a><br />
+                                                @*<a asp-controller="ticket" asp-action="details" asp-route-id="@ticket.TicketId"
+                                                   class="btn btn-primary btn-sm mb-1" style="width:70px;">View</a><br />*@
                                                 <a asp-controller="ticket" asp-action="edit" asp-route-id="@ticket.TicketId"
                                                    class="btn btn-primary btn-sm mb-1" style="width:70px;">Edit</a><br />
                                                 <a class="btn btn-danger btn-sm" name="delete"

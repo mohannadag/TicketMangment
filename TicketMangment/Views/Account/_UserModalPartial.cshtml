@@ -1,0 +1,85 @@
+﻿@model CreateUserViewModel
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content card card-authentication1 mx-auto my-5">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add New User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" name="create-new-user">
+                <div class="modal-body">
+
+                    <div asp-validation-summary="All" class="text-warning"></div>
+                    
+
+
+                    <div class="form-group">
+                        <label class="sr-only" asp-for="Name"></label>
+                        <div class="position-relative has-icon-right">
+                            <input asp-for="Name" id="username" name="username" class="form-control input-shadow" placeholder="Enter Username">
+                            <div class="form-control-position">
+                                <i class="icon-user"></i>
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" asp-for="Email">Email</label>
+                        <div class="position-relative has-icon-right">
+                            <input asp-for="Email" id="email" name="email" class="form-control input-shadow" placeholder="Enter the user email">
+                            <div class="form-control-position">
+                                <i class="icon-envelope-open"></i>
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    @*<div class="form-group row">
+                        <label asp-for="DepartmentId" class="col-sm-2 col-form-label"></label>
+                        <div class="col-sm-10">
+                            <select class="form-control" asp-for="DepartmentId" asp-items="@ViewBag.departments">
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                        </div>
+                    </div>*@
+
+                    @*<div class="form-group">
+                        <label asp-for="DepartmentId" class="sr-only"></label>
+                        <div class="position-relative">
+                            <select class="form-control" id="department" asp-for="DepartmentId"
+                                    asp-items="@(new SelectList(ViewBag.departments,"DepartmentId","DepartmentName"))">
+                                <option value="@null">Please select one</option>
+                            </select>*@
+                            @*<span asp-validation-for="@Model[i].AssignTo" class="text-danger"></span>*@
+                        @*</div>
+                    </div>*@
+
+
+                    <div class="form-group">
+                        <label class="sr-only" asp-for="Password"></label>
+                        <div class="position-relative has-icon-right">
+                            <input asp-for="Password" id="password" name="password" class="form-control input-shadow" placeholder="Enter password">
+                            <div class="form-control-position">
+                                <i class="icon-lock"></i>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="adduser" data-save="modal">Add user</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
